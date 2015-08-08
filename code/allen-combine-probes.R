@@ -1,3 +1,5 @@
+print("#######################################################################")
+print("Starting allen-combine-probes.R script...")
 sessionInfo()
 
 library(WGCNA)
@@ -32,7 +34,9 @@ collapse.object.ldf <- collapseRows(probes.array.data.df
                                     , rowGroup=row.groups
                                     , rowID=row.ID
                                     , method="Average")
-array.data.subset.avg.probes.df.rda <- collapse.object.ldf[[1]]
+array.data.subset.avg.probes.df <- collapse.object.ldf[[1]]
 
-save(avg.probes.array.data.df, meta.data.subset.ldf,
-     file="../processed_data/array.data.subset.avg.probes.df.rda")
+save(array.data.subset.avg.probes.df, meta.data.subset.ldf,
+     file="../processed_data/array.data.subset.avg.probes.df")
+
+print("End of allen-combine-probes.R script...")
