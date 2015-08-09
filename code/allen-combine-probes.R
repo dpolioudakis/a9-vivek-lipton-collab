@@ -37,6 +37,6 @@ collapse.object.ldf <- collapseRows(probes.array.data.df
 array.data.subset.avg.probes.df <- collapse.object.ldf[[1]]
 
 save(array.data.subset.avg.probes.df, meta.data.subset.ldf,
-     file="../processed_data/array.data.subset.avg.probes.df")
+     file="../processed_data/array_data.subset.avg.probes.rda")
 
 print("End of allen-combine-probes.R script...")
