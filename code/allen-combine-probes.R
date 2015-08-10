@@ -11,7 +11,7 @@ allowWGCNAThreads()
 disableWGCNAThreads() 
 
 # Load dataframe of combined allen brain data
-load("../processed_data/array.data.subset.df.rda")
+load("../processed_data/array_data_subset_rda")
 
 # Load probe and gene name data
 probes.data.df <- read.csv("../raw_data/allen_data/178236545-2015-07-15/Probes.csv")
@@ -37,6 +37,6 @@ collapse.object.ldf <- collapseRows(probes.array.data.df
 array.data.subset.avg.probes.df <- collapse.object.ldf[[1]]
 
 save(array.data.subset.avg.probes.df, meta.data.subset.ldf,
-     file="../processed_data/array_data.subset.avg.probes.rda")
+     file="../processed_data/array_data_subset_avg_probes.rda")
 
 print("End of allen-combine-probes.R script...")
