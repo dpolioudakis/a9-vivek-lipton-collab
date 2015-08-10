@@ -1,0 +1,25 @@
+UGE job for subset-allen-to-basal-ganglia built Tue Aug  4 15:57:42 PDT 2015
+
+  subset-allen-to-basal-ganglia directory:
+    /u/home/d/dpolioud/a9-vivek-lipton-collab/code
+  Submitted to UGE:
+    Job 488927, queue: idre-quick.q, sub: Tue Aug 4 15:57:53 2015
+  SCRATCH directory:
+    /work/488927.1.idre-quick.q
+
+subset-allen-to-basal-ganglia started on:   n52
+subset-allen-to-basal-ganglia started at:   Tue Aug 4 15:59:48 PDT 2015
+
+Currently Loaded Modulefiles:
+  1) openmpi/1.6_gcc-4.4   3) proj/4.8.0            5) jags/3.4.0
+  2) gdal/1.9.2            4) geos/3.4.2            6) R/3.0.1
+
+R CMD BATCH subset-allen-to-basal-ganglia.R subset-allen-to-basal-ganglia.out.488927
+real 859.37
+user 840.68
+sys 7.23
+
+subset-allen-to-basal-ganglia finished at:  Tue Aug 4 16:14:08 PDT 2015
+
+Scratch files in /work/488927.1.idre-quick.q deleted:
+total 0

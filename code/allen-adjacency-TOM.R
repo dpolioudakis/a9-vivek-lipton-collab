@@ -1,5 +1,13 @@
 # Cluster samples and construct modules
 
+# Workflow
+#   1a-allen-subset-to-basal-ganglia.R
+#   1b-allen-combine-robes.R
+#   2a-allen-soft-thresholding-power.R
+#   2b-allen-adjacency-TOM.R
+#   3-allen-construct-network-modules.R
+#   4-allen-compare-modules-metadata.R
+
 print("#######################################################################")
 print("Starting allen-adjacency-TOM.R script...")
 sessionInfo()
