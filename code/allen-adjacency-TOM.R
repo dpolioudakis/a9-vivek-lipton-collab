@@ -22,11 +22,11 @@ load("../processed_data/array_data_subset_avg_probes.rda")
 
 # Transpose expression data and assign column names from column 1
 expr.data <- t(array.data.subset.avg.probes.df)
-colnames(expr.data) <- expr.data[1, ]
-expr.data <- expr.data[-1, ]
-# # Selecting 5000 genes with highest expression values (avg across samples)
-# expr.data.top.5000 <- expr.data[,rank(-colMeans(expr.data))<=5000]
-# expr.data= expr.data.top.5000
+# colnames(expr.data) <- expr.data[1, ]
+# expr.data <- expr.data[-1, ]
+# Selecting 5000 genes with highest expression values (avg across samples)
+expr.data.top.5000 <- expr.data[,rank(-colMeans(expr.data))<=5000]
+expr.data= expr.data.top.5000
 
 soft.power = 5
 # Biweight midcorrelation is considered to be a good alternative to Pearson
