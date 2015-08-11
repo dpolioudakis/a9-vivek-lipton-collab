@@ -14,29 +14,29 @@ disableWGCNAThreads()
 load("../processed_data/array_data_subset_rda")
 
 # Load probe and gene name data
-probes.data.df <- read.csv("../raw_data/allen_data/178236545-2015-07-15/Probes.csv")
+probesDataDF <- read.csv("../raw_data/allen_data/178236545-2015-07-15/Probes.csv")
 
 # Add gene symbol and entrez to array data data frame
-probes.array.data.df <- merge(array.data.subset.df, probes.data.df[ ,c(1,4,6)]
+probesArrayDataDF <- merge(arrayDataSubsetDF, probesDataDF[ ,c(1,4,6)]
                               , by.x="probe", by.y="probe_id")
 
 # Format data for collapseRows fxn
-probes.array.data.df <- merge(probes.data.df[ ,c(1,4,6)], array.data.subset.df 
+probesArrayDataDF <- merge(probesDataDF[ ,c(1,4,6)], arrayDataSubsetDF 
                               , by.x="probe_id", by.y="probe")
-rownames(probes.array.data.df) <- probes.array.data.df$probe_id
-row.groups <- probes.array.data.df$gene_symbol
-probes.array.data.df <- probes.array.data.df[ ,-c(1:3)]
-row.ID <- rownames(probes.array.data.df)
+rownames(probesArrayDataDF) <- probesArrayDataDF$probe_id
+rowGroups <- probesArrayDataDF$gene_symbol
+probesArrayDataDF <- probesArrayDataDF[ ,-c(1:3)]
+rowID <- rownames(probesArrayDataDF)
 
 # Average probe expression
 # Outputs list, 1st object is the collapsed array data
-collapse.object.ldf <- collapseRows(probes.array.data.df
-                                    , rowGroup=row.groups
-                                    , rowID=row.ID
+collapseObjectLDF <- collapseRows(probesArrayDataDF
+                                    , rowGroup=rowGroups
+                                    , rowID=rowID
                                     , method="Average")
-array.data.subset.avg.probes.df <- collapse.object.ldf[[1]]
+arrayDataSubsetAvgProbesDF <- collapseObjectLDF[[1]]
 
-save(array.data.subset.avg.probes.df, meta.data.subset.ldf,
+save(arrayDataSubsetAvgProbesDF, metaDataSubsetLDF,
      file="../processed_data/array_data_subset_avg_probes.rda")
 
 print("End of allen-combine-probes.R script...")
