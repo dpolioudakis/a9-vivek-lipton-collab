@@ -6,23 +6,23 @@ sessionInfo()
 print("Loading Allen Brain microarray data...")
 
 #Functions to load data
-LoadArrayData <- function (bio.rep.folder) {
-     array.data.path <- paste(
-          "../raw_data/allen_data/", bio.rep.folder, "/MicroarrayExpression.csv"
+LoadArrayData <- function (bioRepFolder) {
+     arrayDataPath <- paste(
+          "../raw_data/allen_data/", bioRepFolder, "/MicroarrayExpression.csv"
           , sep= ""
      )
-     read.csv(array.data.path, header=FALSE)
+     read.csv(arrayDataPath, header=FALSE)
 }
-LoadMetaData <- function (bio.rep.folder) {
-     meta.data.path <- paste(
-          "../raw_data/allen_data/", bio.rep.folder, "/SampleAnnot.csv"
+LoadMetaData <- function (bioRepFolder) {
+     metaDataPath <- paste(
+          "../raw_data/allen_data/", bioRepFolder, "/SampleAnnot.csv"
           , sep= ""
      )
-     read.csv(meta.data.path)
+     read.csv(metaDataPath)
 }
 
 #Sub folders with Allen Brain span data, each folder is 1 brain
-array.data.folder.names <- list(
+arrayDataFolderNames <- list(
      "178236545-2015-07-15",
      "178238266-2015-07-15",
      "178238316-2015-07-15",
@@ -34,8 +34,8 @@ array.data.folder.names <- list(
 #Load the Allen Brain microarray data
 #Columns correspond to samples and samples are listed in the same order in the
 #meta and array data
-exp.array.data.ldf <- lapply(array.data.folder.names, LoadArrayData)
-meta.array.data.ldf <- lapply(array.data.folder.names, LoadMetaData)
+expArrayDataLDF <- lapply(arrayDataFolderNames, LoadArrayData)
+metaArrayDataLDF <- lapply(arrayDataFolderNames, LoadMetaData)
 
 # save(array.data, file="../processed.data/all.allen.array.data.rda")
 ################################################################################
@@ -46,47 +46,47 @@ print("Subsetting data to select the substantia nigra samples...")
 # Areas to subset, identified by unix grep command:
 # grep -r --include SampleAnnot* 'accumbens\|\caudate\|putamen\
 # |substantia\|subthalamic' 17* | cut -d, -f4,5,6,7 | sort -u | column
-areas.to.subset <- c("substantia nigra", "nucleus accumbens", "caudate"
+areasToSubset <- c("substantia nigra", "nucleus accumbens", "caudate"
                      ,"putamen", "subthalamic")
 
 # Function to subset the meta data
-SubsetMetaData <- function (bio.rep.meta.data, to.match) {
-     subset(bio.rep.meta.data, grepl(paste(to.match, collapse="|")
+SubsetMetaData <- function (bioRepMetaData, toMatch) {
+     subset(bioRepMetaData, grepl(paste(toMatch, collapse="|")
                                      , structure_name))
 }
 
 #Function to subset the array expression data
-SubsetArrayData <- function (bio.rep.exp.array.data.ldf, bio.rep.meta.data
-                               , to.match) {
-     subset.array.data <- bio.rep.exp.array.data.ldf[ 
-          , grepl(paste(to.match, collapse="|")
-                  , bio.rep.meta.data$structure_name)
+SubsetArrayData <- function (bioRepExpArrayDataLDF, bioRepMetaData
+                               , toMatch) {
+     subsetArrayData <- bioRepExpArrayDataLDF[ 
+          , grepl(paste(toMatch, collapse="|")
+                  , bioRepMetaData$structure_name)
           ]
 }
 
 #Subset the meta data
-meta.data.subset.ldf <- lapply(meta.array.data.ldf
+metaDataSubsetLDF <- lapply(metaArrayDataLDF
                                , SubsetMetaData
-                               , areas.to.subset)
+                               , areasToSubset)
 #Meta data number of samples and number of features
 print("Meta data subset number of samples (Row1) and number of features (Row2):")
-sapply(meta.data.subset.ldf, dim)
+sapply(metaDataSubsetLDF, dim)
 print("Total number of samples in subset:")
-sum(sapply(meta.data.subset.ldf, dim)[1, ])
+sum(sapply(metaDataSubsetLDF, dim)[1, ])
 
 #Subset the array expression data
-array.data.subset.df <- do.call(cbind, mapply(SubsetArrayData
-                                           , exp.array.data.ldf
-                                           , meta.array.data.ldf
-                                           , MoreArgs= list(areas.to.subset)))
+arrayDataSubsetDF <- do.call(cbind, mapply(SubsetArrayData
+                                           , expArrayDataLDF
+                                           , metaArrayDataLDF
+                                           , MoreArgs= list(areasToSubset)))
 #Add the probe ID numbers as column 1
-array.data.subset.df <- cbind(probe=exp.array.data.ldf[[1]][,1]
-                              , array.data.subset.df)
+arrayDataSubsetDF <- cbind(probe=expArrayDataLDF[[1]][,1]
+                              , arrayDataSubsetDF)
 print("Dimensions of subset expression data, columns are samples:")
 print("(row 1 is Probe ID)")
-dim(array.data.subset.df)
+dim(arrayDataSubsetDF)
 
-save(array.data.subset.df, meta.data.subset.ldf,
+save(arrayDataSubsetDF, metaDataSubsetLDF,
      file="../processed_data/array_data_subset_rda")
 
 print("End of subset-allen-to-basal-ganglia.R script...")
