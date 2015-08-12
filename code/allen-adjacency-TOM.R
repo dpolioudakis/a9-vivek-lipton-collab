@@ -2,7 +2,7 @@
 
 # Workflow
 #   1a-allen-subset-to-basal-ganglia.R
-#   1b-allen-combine-robes.R
+#   1b-allen-combine-probes.R
 #   2a-allen-soft-thresholding-power.R
 #   2b-allen-adjacency-TOM.R
 #   3-allen-construct-network-modules.R
@@ -25,8 +25,8 @@ datExpr <- t(arrayDataSubsetAvgProbesDF)
 # colnames(datExpr) <- datExpr[1, ]
 # datExpr <- datExpr[-1, ]
 # Selecting 5000 genes with highest expression values (avg across samples)
-datExprTop5000 <- datExpr[,rank(-colMeans(datExpr))<=5000]
-datExpr= datExprTop5000
+# datExprTop5000 <- datExpr[,rank(-colMeans(datExpr))<=5000]
+# datExpr= datExprTop5000
 
 softPower = 5
 # Biweight midcorrelation is considered to be a good alternative to Pearson
