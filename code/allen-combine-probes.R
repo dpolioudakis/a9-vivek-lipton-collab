@@ -14,7 +14,8 @@ disableWGCNAThreads()
 load("../processed_data/array_data_subset_rda")
 
 # Load probe and gene name data
-probesDataDF <- read.csv("../raw_data/allen_data/178236545-2015-07-15/Probes.csv")
+probesDataDF <- read.csv(
+  "../raw_data/allen_data/178236545-2015-07-15/Probes.csv")
 
 # Add gene symbol and entrez to array data data frame
 probesArrayDataDF <- merge(arrayDataSubsetDF, probesDataDF[ ,c(1,4,6)]
