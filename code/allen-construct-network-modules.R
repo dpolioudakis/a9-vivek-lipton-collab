@@ -1,4 +1,12 @@
-# Cluster samples and construct modules
+# Cluster samples and construct modules testing different parameters
+
+# Workflow
+#   1a-allen-subset-to-basal-ganglia.R
+#   1b-allen-combine-probes.R
+#   2a-allen-soft-thresholding-power.R
+#   2b-allen-adjacency-TOM.R
+#   3-allen-construct-network-modules.R
+#   4-allen-compare-modules-metadata.R
 
 print("#######################################################################")
 print("Starting allen-construct-network-modules.R script...")
@@ -13,6 +21,7 @@ allowWGCNAThreads()
 disableWGCNAThreads() 
 
 load("../processed_data/allen_adjacency_TOM.rda")
+load("../processed_data/array_data_subset_avg_probes.rda")
 
 softPower = 5
 
