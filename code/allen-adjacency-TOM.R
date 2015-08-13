@@ -28,8 +28,8 @@ exprData <- t(arrayDataSubsetAvgProbesDF)
 # exprDataTop5000 <- exprData[,rank(-colMeans(exprData))<=5000]
 # exprData= exprDataTop5000
 # Selecting 5000 random genes
-exprDataRandom5000 <- exprData[ , sample(ncol(exprData), 5000)]
-exprData <- exprDataRandom5000
+# exprDataRandom5000 <- exprData[ , sample(ncol(exprData), 5000)]
+# exprData <- exprDataRandom5000
 
 softPower = 5
 # Biweight midcorrelation is considered to be a good alternative to Pearson
