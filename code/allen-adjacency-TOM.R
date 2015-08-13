@@ -21,17 +21,20 @@ disableWGCNAThreads()
 load("../processed_data/array_data_subset_avg_probes.rda")
 
 # Transpose expression data and assign column names from column 1
-datExpr <- t(arrayDataSubsetAvgProbesDF)
-# colnames(datExpr) <- datExpr[1, ]
-# datExpr <- datExpr[-1, ]
+exprData <- t(arrayDataSubsetAvgProbesDF)
+# colnames(exprData) <- exprData[1, ]
+# exprData <- exprData[-1, ]
 # Selecting 5000 genes with highest expression values (avg across samples)
-# datExprTop5000 <- datExpr[,rank(-colMeans(datExpr))<=5000]
-# datExpr= datExprTop5000
+# exprDataTop5000 <- exprData[,rank(-colMeans(exprData))<=5000]
+# exprData= exprDataTop5000
+# Selecting 5000 random genes
+exprDataRandom5000 <- exprData[ , sample(ncol(exprData), 5000)]
+exprData <- exprDataRandom5000
 
 softPower = 5
 # Biweight midcorrelation is considered to be a good alternative to Pearson
 # correlation since it is more robust to outliers.
-adjacency = adjacency(datExpr, power= softPower, corFnc= "bicor")
+adjacency = adjacency(exprData, power= softPower, corFnc= "bicor")
 
 TOM = TOMsimilarity(adjacency)
 dissTOM = 1-TOM
