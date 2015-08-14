@@ -11,7 +11,7 @@ allowWGCNAThreads()
 disableWGCNAThreads() 
 
 # Load dataframe of combined allen brain data
-load("../processed_data/array_data_subset_rda")
+load("../processed_data/array_data_subset.rda")
 
 # Load probe and gene name data
 probesDataDF <- read.csv(
