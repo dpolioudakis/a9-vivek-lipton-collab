@@ -25,13 +25,14 @@ load("../processed_data/array_data_subset.rda")
 probesDataDF <- read.csv(
   "../raw_data/allen_data/178236545-2015-07-15/Probes.csv")
 
-# Add gene symbol and entrez to array data data frame
-probesArrayDataDF <- merge(arrayDataSubsetDF, probesDataDF[ ,c(1,4,6)]
-                              , by.x="probe", by.y="probe_id")
+# # Add gene symbol and entrez to array data data frame
+# probesArrayDataDF <- merge(arrayDataSubsetDF, probesDataDF[ ,c(1,4,6)]
+#                               , by.x="probe", by.y="probe_id")
 
-# Format data for collapseRows fxn
+# Add gene symbol and entrez to array data data frame
 probesArrayDataDF <- merge(probesDataDF[ ,c(1,4,6)], arrayDataSubsetDF 
                               , by.x="probe_id", by.y="probe")
+# Format data for collapseRows fxn
 rownames(probesArrayDataDF) <- probesArrayDataDF$probe_id
 rowGroups <- probesArrayDataDF$gene_symbol
 probesArrayDataDF <- probesArrayDataDF[ ,-c(1:3)]
