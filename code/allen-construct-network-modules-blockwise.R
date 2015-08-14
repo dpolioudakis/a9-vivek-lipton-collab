@@ -18,7 +18,7 @@ options(stringsAsFactors=FALSE)
 allowWGCNAThreads()
 disableWGCNAThreads() 
 
-load("../processed_data/allen_adjacency_TOM.rda")
+load("../processed_data/array_data_subset_avg_probes.rda")
 
 # Transpose expression data and assign column names from column 1
 exprData <- t(arrayDataSubsetAvgProbesDF)
@@ -56,6 +56,6 @@ deepSplit <- c(2)
 MEmergeCutHeight <- c(0.2)
 bwModules <- MakeBWModules(minModSize, deepSplit, MEmergeCutHeight)
 
-save(bwModules, file="../processed_data/allen_BW_modules.rda")
+save(bwModules, exprData, file="../processed_data/allen_BW_modules.rda")
 
 
