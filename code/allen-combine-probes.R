@@ -1,3 +1,11 @@
+# Workflow
+#   1a-allen-subset-to-basal-ganglia.R
+#   1b-allen-combine-probes.R
+#   2a-allen-soft-thresholding-power.R
+#   2b-allen-adjacency-TOM.R
+#   3-allen-construct-network-modules.R
+#   4-allen-compare-modules-metadata.R
+
 print("#######################################################################")
 print("Starting allen-combine-probes.R script...")
 sessionInfo()
