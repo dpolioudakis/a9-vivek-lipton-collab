@@ -87,7 +87,7 @@ print("(row 1 is Probe ID)")
 dim(arrayDataSubsetDF)
 
 save(arrayDataSubsetDF, metaDataSubsetLDF,
-     file="../processed_data/array_data_subset_rda")
+     file="../processed_data/array_data_subset.rda")
 
 print("End of subset-allen-to-basal-ganglia.R script...")
 
