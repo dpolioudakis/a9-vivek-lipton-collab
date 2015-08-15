@@ -1,5 +1,14 @@
 # Cluster samples and construct modules blockwise
 
+# Workflow
+#   1a-allen-subset-to-basal-ganglia.R
+#   1b-allen-combine-probes.R
+#   2a-allen-soft-thresholding-power.R
+#   2b-allen-adjacency-TOM.R
+#   3-allen-construct-network-modules.R
+#   4-allen-compare-modules-metadata.R
+
+
 print("#######################################################################")
 print("Starting allen-ME-region-corr.R script...")
 sessionInfo()
@@ -33,13 +42,13 @@ dev.off()
 # Make vector of structure acronyms in order of blockwiseMEs
 brainRegionV <- NULL
 brainRegionV <- lapply(metaDataSubsetLDF
-                       , function(x) c(brainRegionV, x$structure_acronym))
+                       , function(x) c(brainRegionV, as.character(x$structure_acronym)))
 brainRegionV <- unlist(brainRegionV)
 brainRegionV <- as.factor(brainRegionV)
 # Boxplots of the ME expression by brain region for each ME
 sizeGrWindow(12,12)
 pdf("../analysis/3b_BW_ME_region_corr.pdf", height=12, width=12)
-par(mfrow = c(4,5))
+par(mfrow = c(4,4))
 par(las=2)
 # Make list of DFs
 #   Col 1: ME expression
@@ -52,5 +61,30 @@ MEnames <- names(MEbrainRegionLDF)
 # and plot
 for(i in 1:length(MEbrainRegionLDF)) {
   boxplot(ME~brainRegionV, data=MEbrainRegionLDF[[i]], main=MEnames[[i]])
-  }
+}
+for(i in 1:16) {
+  boxplot(ME~brainRegionV, data=MEbrainRegionLDF[[i]], main=MEnames[[i]])
+}
 dev.off()
+
+
+
+apply(arrayDataSubsetAvgProbesDF[c("ALDH1A1", "TH", "SLC18A2"), ], 1, cor, bwModules$MEs)
+
+markerMEcor <- cor(bwModules$MEs, t(arrayDataSubsetAvgProbesDF[c("ALDH1A1", "TH", "SLC18A2"), ]))
+
+sizeGrWindow(12,3)
+quartz()
+labeledHeatmap(markerMEcor
+               , colnames(markerMEcor)
+               , rownames(markerMEcor)
+               , colorLabels = FALSE
+               , colors=greenWhiteRed(50)
+               , setStdMargins = FALSE
+               , textMatrix = signif(markerMEcor,2)
+               , cex.text = 0.5
+               , zlim = c(-1,1)
+               , main = "Gene-module correlation")
+
+
+
