@@ -68,21 +68,19 @@ for(i in 1:16) {
 dev.off()
 
 
+markerMEcor <- cor(bwModules$MEs, t(arrayDataSubsetAvgProbesDF[c("ALDH1A1", "TH", "SLC18A2", "KCNJ6", "CALB1"), ]))
 
-apply(arrayDataSubsetAvgProbesDF[c("ALDH1A1", "TH", "SLC18A2"), ], 1, cor, bwModules$MEs)
+markerMEcor <- cor(bwModules$MEs, t(arrayDataSubsetAvgProbesDF[c("ALDH1A1", "TH", "SLC18A2", "CACNA1D", "CALB1", "CALB2", "KCNJ6", "LMX1A", "FOXA2", "NR4A2", "ALDH1A1"), ]))
 
-markerMEcor <- cor(bwModules$MEs, t(arrayDataSubsetAvgProbesDF[c("ALDH1A1", "TH", "SLC18A2"), ]))
-
-sizeGrWindow(12,3)
-quartz()
 labeledHeatmap(markerMEcor
                , colnames(markerMEcor)
                , rownames(markerMEcor)
                , colorLabels = FALSE
                , colors=greenWhiteRed(50)
-               , setStdMargins = FALSE
+               , setStdMargins = TRUE
                , textMatrix = signif(markerMEcor,2)
                , cex.text = 0.5
+               , cex.lab = 0.5
                , zlim = c(-1,1)
                , main = "Gene-module correlation")
 
