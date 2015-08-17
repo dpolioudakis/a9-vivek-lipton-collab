@@ -24,7 +24,10 @@ disableWGCNAThreads()
 load("../processed_data/allen_BW_modules.rda")
 load("../processed_data/array_data_subset_avg_probes.rda")
 
-blockwiseMEs <- moduleEigengenes(exprData, bwModules$colors)$eigengenes
+blockwiseMEs <- moduleEigengenes(exprData, bwModules[[3]]$colors)$eigengenes
+
+
+
 
 signif(cor(blockwiseMEs, blockwiseMEs), 3)
 
@@ -47,8 +50,8 @@ brainRegionV <- unlist(brainRegionV)
 brainRegionV <- as.factor(brainRegionV)
 # Boxplots of the ME expression by brain region for each ME
 sizeGrWindow(12,12)
-pdf("../analysis/3b_BW_ME_region_corr.pdf", height=12, width=12)
-par(mfrow = c(4,4))
+pdf("../analysis/3b_BW_ME_region_corr.pdf", height=100, width=12)
+par(mfrow = c(12,3))
 par(las=2)
 # Make list of DFs
 #   Col 1: ME expression
@@ -60,17 +63,21 @@ MEnames <- names(MEbrainRegionLDF)
 # Loop through list of ME expression and brain region and list of ME name
 # and plot
 for(i in 1:length(MEbrainRegionLDF)) {
-  boxplot(ME~brainRegionV, data=MEbrainRegionLDF[[i]], main=MEnames[[i]])
+  pdf(paste("../analysis/3b_BW_ME_region_corr.pdf",i))
+  boxplot(ME~brainRegionV, data=MEbrainRegionLDF[[i]], main=MEnames[[i]]
+  , ylab = "ME Expression (arbitrary value)"
+  , xlab = "Brain region")
+  dev.off()
 }
-for(i in 1:16) {
+for(i in 1:6) {
   boxplot(ME~brainRegionV, data=MEbrainRegionLDF[[i]], main=MEnames[[i]])
 }
 dev.off()
 
 
-markerMEcor <- cor(bwModules$MEs, t(arrayDataSubsetAvgProbesDF[c("ALDH1A1", "TH", "SLC18A2", "KCNJ6", "CALB1"), ]))
+markerMEcor <- cor(bwModules[[3]]$MEs, t(arrayDataSubsetAvgProbesDF[c("ALDH1A1", "TH", "SLC18A2", "KCNJ6", "CALB1"), ]))
 
-markerMEcor <- cor(bwModules$MEs, t(arrayDataSubsetAvgProbesDF[c("ALDH1A1", "TH", "SLC18A2", "CACNA1D", "CALB1", "CALB2", "KCNJ6", "LMX1A", "FOXA2", "NR4A2", "ALDH1A1"), ]))
+markerMEcor <- cor(bwModules[[3]]$MEs, t(arrayDataSubsetAvgProbesDF[c("ALDH1A1", "TH", "SLC18A2", "CACNA1D", "CALB1", "CALB2", "KCNJ6", "LMX1A", "FOXA2", "NR4A2", "ALDH1A1"), ]))
 
 labeledHeatmap(markerMEcor
                , colnames(markerMEcor)
@@ -79,10 +86,10 @@ labeledHeatmap(markerMEcor
                , colors=greenWhiteRed(50)
                , setStdMargins = TRUE
                , textMatrix = signif(markerMEcor,2)
-               , cex.text = 0.5
-               , cex.lab = 0.5
+               , cex.text = 1
+               , cex.lab = 1
                , zlim = c(-1,1)
-               , main = "Gene-module correlation")
+               , main = "Gene to module eigenegene correlation")
 
 
 
