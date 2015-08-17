@@ -24,12 +24,9 @@ disableWGCNAThreads()
 load("../processed_data/allen_BW_modules.rda")
 load("../processed_data/array_data_subset_avg_probes.rda")
 
+# bwModules is list of modules from 3 different ME merge cut heights
 blockwiseMEs <- moduleEigengenes(exprData, bwModules[[3]]$colors)$eigengenes
 
-
-
-
-signif(cor(blockwiseMEs, blockwiseMEs), 3)
 
 pdf("../analysis/3b_BW_ME_correlation.pdf", height=8, width=8)
 par(cex = 1.0)
@@ -49,10 +46,9 @@ brainRegionV <- lapply(metaDataSubsetLDF
 brainRegionV <- unlist(brainRegionV)
 brainRegionV <- as.factor(brainRegionV)
 # Boxplots of the ME expression by brain region for each ME
-sizeGrWindow(12,12)
-pdf("../analysis/3b_BW_ME_region_corr.pdf", height=100, width=12)
-par(mfrow = c(12,3))
-par(las=2)
+# sizeGrWindow(12,12)
+# par(mfrow = c(12,3))
+# par(las=2)
 # Make list of DFs
 #   Col 1: ME expression
 #   Col 2: brain region
@@ -61,7 +57,7 @@ MEbrainRegionLDF <- lapply(blockwiseMEs
                            , function(ME) data.frame(ME, brainRegionV))
 MEnames <- names(MEbrainRegionLDF)
 # Loop through list of ME expression and brain region and list of ME name
-# and plot
+# and plot separate graph for each ME
 for(i in 1:length(MEbrainRegionLDF)) {
   pdf(paste("../analysis/3b_BW_ME_region_corr.pdf",i))
   boxplot(ME~brainRegionV, data=MEbrainRegionLDF[[i]], main=MEnames[[i]]
@@ -69,16 +65,19 @@ for(i in 1:length(MEbrainRegionLDF)) {
   , xlab = "Brain region")
   dev.off()
 }
-for(i in 1:6) {
-  boxplot(ME~brainRegionV, data=MEbrainRegionLDF[[i]], main=MEnames[[i]])
-}
-dev.off()
 
 
-markerMEcor <- cor(bwModules[[3]]$MEs, t(arrayDataSubsetAvgProbesDF[c("ALDH1A1", "TH", "SLC18A2", "KCNJ6", "CALB1"), ]))
+# Correlate ME expression for each sample to marker gene expression
+# CALB1 and CALB2 are anti-markers
+markerMEcor <- cor(bwModules[[3]]$MEs, t(arrayDataSubsetAvgProbesDF[
+  c("ALDH1A1", "TH", "SLC18A2", "KCNJ6", "CALB1"), ]))
 
-markerMEcor <- cor(bwModules[[3]]$MEs, t(arrayDataSubsetAvgProbesDF[c("ALDH1A1", "TH", "SLC18A2", "CACNA1D", "CALB1", "CALB2", "KCNJ6", "LMX1A", "FOXA2", "NR4A2", "ALDH1A1"), ]))
+# Correlate with all markers listed in Vivek's work
+markerMEcor <- cor(bwModules[[3]]$MEs, t(arrayDataSubsetAvgProbesDF[
+  c("ALDH1A1", "TH", "SLC18A2", "CACNA1D", "CALB1"
+    , "CALB2", "KCNJ6", "LMX1A", "FOXA2", "NR4A2", "ALDH1A1"), ]))
 
+pdf("../analysis/3b_MEs_markers_corr.pdf", height=8, width=8)
 labeledHeatmap(markerMEcor
                , colnames(markerMEcor)
                , rownames(markerMEcor)
@@ -90,6 +89,7 @@ labeledHeatmap(markerMEcor
                , cex.lab = 1
                , zlim = c(-1,1)
                , main = "Gene to module eigenegene correlation")
+dev.off()
 
 
 
