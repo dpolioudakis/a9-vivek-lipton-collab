@@ -31,7 +31,7 @@ minModSize <- c(30, 50, 100)
 deepSplit <- c(2)
 # Cut height of 0.25, corresponds to a correlation of 0.75, to merge ME:
 MEmergeCutHeight <- c(0.2, 0.25, 0.3)
-maxBlockSize <- c(300) #12000
+maxBlockSize <- c(12000)
 ArgsbwModulesLLDF <- expand.grid(softPower = softPower
                              , minModSize = minModSize
                              , deepSplit = deepSplit
