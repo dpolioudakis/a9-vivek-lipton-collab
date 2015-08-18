@@ -17,13 +17,13 @@ load("../processed_data/array_data_subset_avg_probes.rda")
 # Vivek normalized RNAseq FPKMs from hESC derived A9 neuronal cultures
 load("../HTSeqUnion_Exon_CQN_OutlierRemoved_A9cells.rda")
 
-# bwModules is list of modules from 3 different ME merge cut heights
-blockwiseMEs <- moduleEigengenes(exprData, bwModules[[3]]$colors)$eigengenes
+# bwModulesLL is list of modules from 3 different ME merge cut heights
+blockwiseMEs <- moduleEigengenes(exprData, bwModulesLL[[3]]$colors)$eigengenes
 
 # Write table of gene names in module 28 (ME correlated with A9 markers)
 geneModuleMembership <- as.data.frame(cor(exprData, blockwiseMEs, use = "p"))
 module=28
-moduleGenes <- bwModules[[3]]$colors==module
+moduleGenes <- bwModulesLL[[3]]$colors==module
 geneModuleMembership$ME28[moduleGenes]
 row.names(geneModuleMembership[moduleGenes, ])
 module28Genes <- data.frame(row.names(geneModuleMembership[moduleGenes, ]))
