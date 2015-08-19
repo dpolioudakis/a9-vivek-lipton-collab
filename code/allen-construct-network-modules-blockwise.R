@@ -72,7 +72,7 @@ MakebwModulesLL <- function (softPower
                            , maxBlockSize = maxBlockSize
                            , TOMType = "signed"
                            , reassignThreshold = 0, pamStage = FALSE
-                           , numericLabels = TRUE
+                           , numericLabels = FALSE
                            , verbose = 3)
   print("Table of genes per module:")
   print(table(bwNet$colors))
