@@ -97,6 +97,7 @@ par(cex = 1.0)
 par(mfrow = c(3,1))
 for (i in 1:length(blockwiseMEs)) {
   plotEigengeneNetworks(orderMEs(blockwiseMEs[[i]])
+    # Add title of args used in blockwiseModules function
     , paste(colnames(ArgsbwModulesLLDF), c(ArgsbwModulesLLDF[i,]), collapse=" ")
     , signed=TRUE, colorLabels=FALSE)
 }
@@ -105,5 +106,3 @@ dev.off()
 # , marDendro = c(0,4,2,0)
 
 save(bwModulesLL, exprData, file="../processed_data/allen_BW_modules.rda")
-
-
