@@ -15,15 +15,17 @@ disableWGCNAThreads()
 load("../processed_data/allen_BW_modules.rda")
 load("../processed_data/array_data_subset_avg_probes.rda")
 # Vivek normalized RNAseq FPKMs from hESC derived A9 neuronal cultures
-load("../HTSeqUnion_Exon_CQN_OutlierRemoved_A9cells.rda")
+load("../Vivek_WGCNA_Lipton_A9_SN/HTSeqUnion_Exon_CQN_OutlierRemoved_A9cells.rda")
 
-# bwModulesLL is list of modules from 3 different ME merge cut heights
-blockwiseMEs <- moduleEigengenes(exprData, bwModulesLL[[3]]$colors)$eigengenes
+# bwModulesLL is list of modules from different blockwiseModules parameters used
+modulesToUse <- 15
+blockwiseMEs <- moduleEigengenes(exprData
+                                 , bwModulesLL[[modulesToUse]]$colors)$eigengenes
 
 # Write table of gene names in module 28 (ME correlated with A9 markers)
 geneModuleMembership <- as.data.frame(cor(exprData, blockwiseMEs, use = "p"))
 module=28
-moduleGenes <- bwModulesLL[[3]]$colors==module
+moduleGenes <- bwModulesLL[[modulesToUse]]$colors==module
 geneModuleMembership$ME28[moduleGenes]
 row.names(geneModuleMembership[moduleGenes, ])
 module28Genes <- data.frame(row.names(geneModuleMembership[moduleGenes, ]))
