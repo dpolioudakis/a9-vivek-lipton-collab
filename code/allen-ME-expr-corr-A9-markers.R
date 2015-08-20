@@ -31,10 +31,11 @@ markerMEcor <- lapply(bwModulesLL, function(x)
 pdf("../analysis/3b_MEs_markers_corr-2015-08-20.pdf", height=8, width=8)
 for (i in 1:length(blockwiseMEs)) {
   labeledHeatmap(markerMEcor[[i]]
-                 , colnames(markerMEcor[[i]])
-                 , rownames(markerMEcor[[i]])
+                 , xLabels = colnames(markerMEcor[[i]])
+                 , yLabels = rownames(markerMEcor[[i]])
+                 , ySymbols = rownames(markerMEcor[[i]])
                  , colorLabels = FALSE
-                 , colors=greenWhiteRed(50)
+                 , colors = greenWhiteRed(50)
                  , setStdMargins = TRUE
                  , textMatrix = signif(markerMEcor[[i]],2)
                  , cex.text = 1
