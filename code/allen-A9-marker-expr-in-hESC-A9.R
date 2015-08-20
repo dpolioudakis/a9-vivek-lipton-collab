@@ -7,6 +7,7 @@ sessionInfo()
 library(WGCNA)
 library(reshape2)
 library(ggplot2)
+library(biomaRt)
 
 options(stringsAsFactors=FALSE)
 allowWGCNAThreads()
@@ -18,88 +19,54 @@ load("../processed_data/array_data_subset_avg_probes.rda")
 load("../Vivek_WGCNA_Lipton_A9_SN/HTSeqUnion_Exon_CQN_OutlierRemoved_A9cells.rda")
 
 # bwModulesLL is list of modules from different blockwiseModules parameters used
-modulesToUse <- 15
-blockwiseMEs <- moduleEigengenes(exprData
-                                 , bwModulesLL[[modulesToUse]]$colors)$eigengenes
+# 12 corresponds to softPower 9, minModSize 30, deepSplit 2,
+# MEmergeCutHeight 0.25, maxBlockSize 12000
+modNetworkToUse <- 12
+modToUse <- c("saddlebrown", "salmon", "red", "pink", "black", "green", "grey60")
+blockwiseMEs <- moduleEigengenes(
+  exprData, bwModulesLL[[modNetworkToUse]]$colors)$eigengenes
 
 # Write table of gene names in module 28 (ME correlated with A9 markers)
 geneModuleMembership <- as.data.frame(cor(exprData, blockwiseMEs, use = "p"))
-module=28
-moduleGenes <- bwModulesLL[[modulesToUse]]$colors==module
-geneModuleMembership$ME28[moduleGenes]
-row.names(geneModuleMembership[moduleGenes, ])
-module28Genes <- data.frame(row.names(geneModuleMembership[moduleGenes, ]))
-write.table(module28Genes, "../analysis/SN_module_genes.txt")
+moduleGenes <- bwModulesLL[[modNetworkToUse]]$colors=="saddlebrown"
+moduleGenes <- data.frame(row.names(geneModuleMembership[moduleGenes, ]))
 
-# Data frame of Ensembl IDs, gene symbols, and status as marker or anti-marker
-# Start by making list of Enzembl IDs and gene symbols
-module28Ensembl <- c("ENSG00000165092"=	"ALDH1A1"
-                     ,"ENSG00000164512"=	"ANKRD55"
-                     ,"ENSG00000186897"=	"C1QL4"
-                     ,"ENSG00000205856"=	"C22orf42"
-                     ,"ENSG00000004948"=	"CALCR"
-                     ,"ENSG00000075275"=	"CELSR1"
-                     ,"ENSG00000147432"=	"CHRNB3"
-                     ,"ENSG00000167600"=	"CYP2S1"
-                     ,"ENSG00000132437"=	"DDC"
-                     ,"ENSG00000185559"=	"DLK1"
-                     ,"ENSG00000108001"=	"EBF3"
-                     ,"ENSG00000163064"=	"EN1"
-                     ,"ENSG00000129514"=	"FOXA1"
-                     ,"ENSG00000102287"=	"GABRE"
-                     ,"ENSG00000131979"=	"GCH1"
-                     ,"ENSG00000087460"=	"GNAS"
-                     ,"ENSG00000137252"=	"HCRTR2"
-                     ,"ENSG00000150361"=	"KLHL1"
-                     ,"ENSG00000259974"=	"LINC00261"
-                     ,"ENSG00000136944"=	"LMX1B"
-                     ,"ENSG00000167419"=	"LPO"
-                     ,"ENSG00000109805"=	"NCAPG"
-                     ,"ENSG00000138653"=	"NDST4"
-                     ,"ENSG00000168743"=	"NPNT"
-                     ,"ENSG00000065320"=	"NTN1"
-                     ,"ENSG00000101188"=	"NTSR1"
-                     ,"ENSG00000183395"=	"PMCH"
-                     ,"ENSG00000136546"=	"SCN7A"
-                     ,"ENSG00000169432"=	"SCN9A"
-                     ,"ENSG00000115884"=	"SDC1"
-                     ,"ENSG00000145248"=	"SLC10A4"
-                     ,"ENSG00000036565"=	"SLC18A1"
-                     ,"ENSG00000165646"=	"SLC18A2"
-                     ,"ENSG00000142319"= "SLC6A3"
-                     ,"ENSG00000276996"=	"SLC6A3"
-                     ,"ENSG00000159167"=	"STC1"
-                     ,"ENSG00000169836"=	"TACR3"
-                     ,"ENSG00000160180"=	"TFF3"
-                     ,"ENSG00000180176"=	"TH"
-                     ,"ENSG00000182223"=	"ZAR1")
+# bioMart manual:
+# http://bioconductor.org/packages/release/bioc/vignettes/biomaRt/inst/doc/biomaRt.pdf
+# Attribute: values to retrieve
+# Filters: input query type
+# Values: input query
+ensembl <- useMart("ensembl")
+ensembl <- useDataset("hsapiens_gene_ensembl",mart=ensembl)
+# Data frame of module Ensembl IDs and gene symbols
+moduleEnsemblDF <- getBM(  attributes = c("ensembl_gene_id", "hgnc_symbol")
+                            , filters = "hgnc_symbol"
+                            , values = moduleGenes
+                            , mart = ensembl)
 
-# Convert to data frame
-module28EnsemblDF <- data.frame(names(module28Ensembl)
-                                , module28Ensembl, row.names = NULL)
-
-# Subset Vivek produced expression data by marker genes present
+# Subset Vivek produced expression data by marker module genes present
 markersExprDF <- datExpr.HTSC.A9[
-  (rownames(datExpr.HTSC.A9) %in% module28EnsemblDF[,1]), ]
+  (rownames(datExpr.HTSC.A9) %in% moduleEnsemblDF[,1]), ]
 
-# Combine data frames to add gene symbol and marker information
-markersExprDF <- merge(markersExprDF, module28EnsemblDF
+# Combine data frames to add gene symbol and module information
+markersExprDF <- merge(markersExprDF, moduleEnsemblDF
                        , by.x="row.names", by.y=1)
 # Changing column name like this is not working
 colnames(markersExprDF[1]) <- "ensembl"
-
 
 # Reshape for ggplot2 using Reshape2 package
 markersExprDF <- melt(markersExprDF
                       , value.name="expression", variable.name="sample")
 
-# Add column with biological replicate label
+# Add column with treatment group label
+numGenesInTreatmentGroup <- (nrow(markersExprDF) / 2)
 markersExprDF <- cbind(markersExprDF
-                       , bio.rep = as.factor(c(rep(2,36), rep(7,36))))
-
+                       , bio.rep = as.factor(
+                         c(rep(2,numGenesInTreatmentGroup)
+                         , rep(7,numGenesInTreatmentGroup))))
 
 # Plot expression marker genes high MEF2C and low MEF2C samples
-ggplot(markersExprDF, aes(x=module28Ensembl, y=expression)) + 
+ggplot(markersExprDF, aes(x=hgnc_symbol, y=expression)) + 
   geom_boxplot(aes(fill=bio.rep)) +
   scale_fill_discrete(name= "Biological\nReplicate",
                       labels= c("2_(high MEF2C)", "7_(low MEF2C)")) +
