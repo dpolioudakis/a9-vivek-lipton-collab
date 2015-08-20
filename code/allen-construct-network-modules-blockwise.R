@@ -87,17 +87,6 @@ MakebwModulesLL <- function (softPower
 bwModulesLL <- apply(ArgsbwModulesLLDF, 1
                      , function(x) MakebwModulesLL(x[1],x[2],x[3],x[4],x[5]))
 
-# DELETE THIS BLOCK IF SCRIPT UPDATE WORKS
-# # bwModulesLL <- MakebwModulesLL(minModSize, deepSplit, MEmergeCutHeight)
-# # blockwiseMEs <- moduleEigengenes(exprData, bwModulesLL$colors)$eigengenes
-# bwModulesLL <- mapply(MakebwModulesLL
-#                     , MEmergeCutHeight
-#                     , MoreArgs = list(
-#                       minModSize = minModSize, deepSplit = deepSplit)
-#                     , SIMPLIFY = FALSE)
-
-
-
 # Graph module eigengene correlations for each set of arguments used in
 # blockwiseModules WGCNA function
 blockwiseMEs <- lapply(bwModulesLL, function (x)
