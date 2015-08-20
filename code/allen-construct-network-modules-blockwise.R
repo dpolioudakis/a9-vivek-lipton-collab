@@ -97,12 +97,12 @@ par(cex = 1.0)
 par(mfrow = c(3,1))
 for (i in 1:length(blockwiseMEs)) {
   plotEigengeneNetworks(orderMEs(blockwiseMEs[[i]])
-    , paste("Eigengene correlation - merge cut height:", MEmergeCutHeight[i])
-    , signed=TRUE, colorLabels=TRUE,
-    , marHeatmap = c(1,4,1,2)
-    , marDendro = c(0,4,2,0))
+    , paste(colnames(ArgsbwModulesLLDF), c(ArgsbwModulesLLDF[i,]), collapse=" ")
+    , signed=TRUE, colorLabels=FALSE)
 }
 dev.off()
+# , marHeatmap = c(1,4,1,2)
+# , marDendro = c(0,4,2,0)
 
 save(bwModulesLL, exprData, file="../processed_data/allen_BW_modules.rda")
 
