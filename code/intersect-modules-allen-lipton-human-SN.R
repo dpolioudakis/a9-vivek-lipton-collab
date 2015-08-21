@@ -17,7 +17,7 @@ modelCombos <- expand.grid(names(allenGenesModels), names(humanSNgenesModels))
 # Intersection genes for every combination of models
 allenHumanSNintersect <- apply(modelCombos, 1
   , function(x) length(intersect(allenGenesModels[[x[1]]]
-                                 , humanSNgenesModels[[x[2]]]$GeneSymbol)))
+                                 , humanSNgenesModels[[x[2]]])))
 # Add combination of models labels
 allenHumanSNintersect <- cbind(modelCombos, allenHumanSNintersect)
 # Reshape into matrix
