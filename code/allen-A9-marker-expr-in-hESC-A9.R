@@ -25,7 +25,7 @@ modNetworkToUse <- 12
 modsToUse <- c("saddlebrown", "salmon", "red", "pink", "black", "green", "grey60")
 
 modNetworkToUse <- 11
-modsToUse <- c("plum1", "grey60", "brown", "cyan", "green", "sienna3", "royalblue")
+modsToUse <- c("plum1", "grey60"), "brown", "cyan", "green", "sienna3", "royalblue")
 
 modNetworkToUse <- 18
 modsToUse <- c("salmon", "blue", "purple")
@@ -96,61 +96,65 @@ for (modToUse in modsToUse) {
     xlab("Gene") +
     theme_grey(base_size = 18)
   ggsave(file= paste(
-    "../analysis/Allen A9 marker expression - minModSize 100 - module -", modToUse, ".pdf"))
+    "../analysis/Allen A9 marker expression - minModSize 30 - module -", modToUse, Sys.Date(), ".pdf"))
 }
 
 
 # PCA plots
-markerModulesLDF <- SelectModule(modNetworkToUse, "sienna3")
-markerModulesA9LDF <- SubsetMarkerModInA9(markerModulesLDF)
-markerModulesA9LDF <- dcast(markerModulesA9LDF, Row.names~sample, value.var = "expression")
-row.names(markerModulesA9LDF) <- markerModulesA9LDF[ ,1]
-markerModulesA9LDF <- markerModulesA9LDF[ ,-1]
-# mds = cmdscale(dist(markerModulesA9LDF), eig = T)
-# test <- matrix(runif(2502, 1, 10),417,6)
-# markerModulesA9LDF <- test
-mds = cmdscale(dist(t(markerModulesA9LDF)), eig = T)
-pc1 = mds$eig[1]^2 / sum(mds$eig^2)
-pc2 = mds$eig[2]^2 / sum(mds$eig^2)
-# lapply((mds$eig^2 / sum(mds$eig^2)*100), function(x) signif(x,3))
-
-mdsAndTreatment <- data.frame(mds$points, as.factor(c(rep("2",3), rep("7",3))))
-
-plot(x = mdsAndTreatment[,1], y = mdsAndTreatment[,2]
-     , col = as.numeric(as.factor(mdsAndTreatment[,3]))
-     , pch = 16, asp=1
-     , main="MDS Plot By Dx"
-     , xlab = paste("PC1 (", signif(100*pc1,3), "%)", sep="")
-     , ylab = paste("PC2 (", signif(100*pc2,3),"%)",sep=""))
-legend("bottomright", levels(mdsAndTreatment[,3]), col=1:length(levels(mdsAndTreatment[,3])), pch=16, cex=0.8)
+for (modToUse in modsToUse) {
+  print(modToUse)
+  # markerModulesLDF <- SelectModule(modNetworkToUse, "sienna3")
+  markerModulesLDF <- SelectModule(modNetworkToUse, modToUse)
+  markerModulesA9LDF <- SubsetMarkerModInA9(markerModulesLDF)
+  markerModulesA9LDF <- dcast(markerModulesA9LDF, Row.names~sample, value.var = "expression")
+  row.names(markerModulesA9LDF) <- markerModulesA9LDF[ ,1]
+  markerModulesA9LDF <- markerModulesA9LDF[ ,-1]
+  # mds = cmdscale(dist(markerModulesA9LDF), eig = T)
+  # test <- matrix(runif(2502, 1, 10),417,6)
+  # markerModulesA9LDF <- test
+  mds = cmdscale(dist(t(markerModulesA9LDF)), eig = T)
+  pc1 = mds$eig[1]^2 / sum(mds$eig^2)
+  pc2 = mds$eig[2]^2 / sum(mds$eig^2)
+  # lapply((mds$eig^2 / sum(mds$eig^2)*100), function(x) signif(x,3))
+  
+  mdsAndTreatment <- data.frame(mds$points, as.factor(c(rep("2",3), rep("7",3))))
+  
+  plot(x = mdsAndTreatment[,1], y = mdsAndTreatment[,2]
+       , col = as.numeric(as.factor(mdsAndTreatment[,3]))
+       , pch = 16, asp=1
+       , main=paste("MDS Plot By Module Marker Gene Expression - module:", modToUse)
+       , xlab = paste("PC1 (", signif(100*pc1,3), "%)", sep="")
+       , ylab = paste("PC2 (", signif(100*pc2,3),"%)",sep=""))
+  legend("bottomright", levels(mdsAndTreatment[,3]), col=1:length(levels(mdsAndTreatment[,3])), pch=16, cex=0.8)
+}
 
 # Mean expression
 # Loop through models of interest in network
 for (modToUse in modsToUse) {
   print(modToUse)
   markerModulesLDF <- SelectModule(modNetworkToUse, modToUse)
-  # markerModulesLDF <- SelectModule(modNetworkToUse, "plum1")
+  markerModulesLDF <- SelectModule(modNetworkToUse, "plum1")
   # Subset genes in module to only those found in Lipton hESC A9 data
   markerModulesA9LDF <- SubsetMarkerModInA9(markerModulesLDF)
   # Make data frame of expression for each Tx group as col 1 and col 2
-  txMarkerExprMean <- data.frame(
+  txMarkersMeansDF <- data.frame(
       markerModulesA9LDF[markerModulesA9LDF$bio.rep == 2, ]$expression
     , markerModulesA9LDF[markerModulesA9LDF$bio.rep == 7, ]$expression)
-  colnames(txMarkerExprMean) <- c("Tx_2_highMEF2C", "Tx_7_lowMEF2C")
+  colnames(txMarkersMeansDF) <- c("Tx_2_highMEF2C", "Tx_7_lowMEF2C")
   # Paired T-test comparing high MEF2C Tx to low MEF2C Tx
-  pval <- t.test(txMarkerExprMean$Tx_2_highMEF2C, txMarkerExprMean$Tx_7_lowMEF2C
+  pval <- t.test(txMarkersMeansDF$Tx_2_highMEF2C, txMarkersMeansDF$Tx_7_lowMEF2C
                  , paired=TRUE)$p.value
   # Format expression data for ggplot2
-  txMarkerExprMean <- melt(txMarkerExprMean
+  txMarkersMeansDF <- melt(txMarkersMeansDF
                            , measure.vars=c("Tx_2_highMEF2C", "Tx_7_lowMEF2C"))
-  colnames(txMarkerExprMean) <- c("treatment", "expression")
-  print(txMarkerExprMean)
+  colnames(txMarkersMeansDF) <- c("treatment", "expression")
+  print(txMarkersMeansDF)
   
   # Make dataframe of pval to keep ggplot2 happy
   formattedPvalggplotDF <- data.frame(
       label = paste("Paired T-test p-value:", as.character(signif(pval, 3)))
   )
-  print(ggplot(data = txMarkerExprMean, aes(x=treatment, y=expression)) + 
+  print(ggplot(data = txMarkersMeansDF, aes(x=treatment, y=expression)) + 
     geom_boxplot(aes(fill=treatment)) +
     geom_text(data = formattedPvalggplotDF, aes(1.5, 8, label = label), type = "NA*") +
     scale_fill_discrete(name= "Biological\nReplicate",
@@ -162,6 +166,86 @@ for (modToUse in modsToUse) {
     theme_bw(base_size = 18) +
     ggsave(file= paste(
       "../analysis/Allen A9 marker expr in hESC A9- minModSize30 - mod-", modToUse, Sys.Date(), ".pdf"))
+  )
+}
+
+# Mean of expression fold changes for each module marker gene in high MEF2C
+# versus low MEF2C
+markerModulesA9LDF <- NULL
+for (modToUse in modsToUse) {
+  print(modToUse)
+  markerModulesLDF <- SelectModule(modNetworkToUse, modToUse)
+  # markerModulesLDF <- SelectModule(modNetworkToUse, "plum1")
+  # Subset genes in module to only those found in Lipton hESC A9 data
+  markerModulesA9LDF[[modToUse]] <-SubsetMarkerModInA9(markerModulesLDF)
+}
+
+lapply(markerModulesA9LDF, 
+  function(x) {
+  markExpr <- dcast(x, Row.names~sample, value.var="expression")
+  row.names(markExpr) <- markExpr[ ,1]
+  markExpr <- markExpr[ ,-1]
+  apply(markExpr, 1, function(x) (sum(x[1:3]) / sum(x[4:6])))
+  }
+)
+
+markerModulesA9LDF
+
+  # Make data frame of expression for each Tx group as col 1 and col 2
+txMarkersMeansDF <- data.frame(
+  markerModulesA9LDF[markerModulesA9LDF$bio.rep == 2, ]$expression
+  , markerModulesA9LDF[markerModulesA9LDF$bio.rep == 7, ]$expression)
+colnames(txMarkersMeansDF) <- c("Tx_2_highMEF2C", "Tx_7_lowMEF2C")
+
+foldChangesLL <- list(foldChangesLL, (txMarkersMeansDF$Tx_2_highMEF2C
+                                      / txMarkersMeansDF$Tx_7_lowMEF2C))
+
+ggplot(data = foldChangesLL, aes(x=treatment, y=expression)) + 
+        geom_boxplot(aes(fill=treatment)))
+
+
+
+print(ggplot(data = txMarkersMeansDF, aes(x=treatment, y=expression)) + 
+        geom_boxplot(aes(fill=treatment)) +
+        geom_text(data = formattedPvalggplotDF, aes(1.5, 8, label = label), type = "NA*") +
+        scale_fill_discrete(name= "Biological\nReplicate",
+                            labels= c("Tx_2_(high MEF2C)", "Tx_7_(low MEF2C)")) +
+        labs(title = paste(
+          "Allen derived A9 marker expression in Lipton A9\nmodule:", modToUse)) +
+        ylab("Mean Expression (normalized FPKM)") +
+        xlab("Treatment") +
+        theme_bw(base_size = 18) +
+        ggsave(file= paste(
+          "../analysis/Allen A9 marker expr in hESC A9- minModSize30 - mod-", modToUse, Sys.Date(), ".pdf"))
+)
+
+
+
+  # Paired T-test comparing high MEF2C Tx to low MEF2C Tx
+  pval <- t.test(txMarkersMeansDF$Tx_2_highMEF2C, txMarkersMeansDF$Tx_7_lowMEF2C
+                 , paired=TRUE)$p.value
+  # Format expression data for ggplot2
+  txMarkersMeansDF <- melt(txMarkersMeansDF
+                           , measure.vars=c("Tx_2_highMEF2C", "Tx_7_lowMEF2C"))
+  colnames(txMarkersMeansDF) <- c("treatment", "expression")
+  print(txMarkersMeansDF)
+  
+  # Make dataframe of pval to keep ggplot2 happy
+  formattedPvalggplotDF <- data.frame(
+    label = paste("Paired T-test p-value:", as.character(signif(pval, 3)))
+  )
+  print(ggplot(data = txMarkersMeansDF, aes(x=treatment, y=expression)) + 
+          geom_boxplot(aes(fill=treatment)) +
+          geom_text(data = formattedPvalggplotDF, aes(1.5, 8, label = label), type = "NA*") +
+          scale_fill_discrete(name= "Biological\nReplicate",
+                              labels= c("Tx_2_(high MEF2C)", "Tx_7_(low MEF2C)")) +
+          labs(title = paste(
+            "Allen derived A9 marker expression in Lipton A9\nmodule:", modToUse)) +
+          ylab("Mean Expression (normalized FPKM)") +
+          xlab("Treatment") +
+          theme_bw(base_size = 18) +
+          ggsave(file= paste(
+            "../analysis/Allen A9 marker expr in hESC A9- minModSize30 - mod-", modToUse, Sys.Date(), ".pdf"))
   )
 }
 
