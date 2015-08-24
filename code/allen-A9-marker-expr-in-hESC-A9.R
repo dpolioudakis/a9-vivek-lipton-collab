@@ -17,6 +17,10 @@ load("../processed_data/allen_BW_modules.rda")
 load("../processed_data/array_data_subset_avg_probes.rda")
 # Vivek normalized RNAseq FPKMs from hESC derived A9 neuronal cultures
 load("../Vivek_WGCNA_Lipton_A9_SN/HTSeqUnion_Exon_CQN_OutlierRemoved_A9cells.rda")
+load("../Vivek_WGCNA_Lipton_A9_SN/HTSeqUnion_Exon_CQN_OutlierRemoved_A9cells_0.rda")
+
+# variable for read depth filter to record in output graph titles
+readDepthFilt <- "0"
 
 # bwModulesLL is list of modules from different blockwiseModules parameters used
 # 12 corresponds to softPower 9, minModSize 30, deepSplit 2,
@@ -32,6 +36,9 @@ modsToUse <- c("plum1", "grey60", "brown", "red", "cyan", "yellowgreen"
 modNetworkToUse <- 18
 modsToUse <- c("salmon", "blue", "purple")
 modsToUse <- c("salmon")
+print("#######################################################################")
+
+# Two general functions to load:
 
 SelectModule <- function (modNetworkToUse, modToUse) {
   blockwiseMEs <- moduleEigengenes(
@@ -137,13 +144,15 @@ PlotMDS <- function (exprDF, module, i) {
   # lapply((mds$eig^2 / sum(mds$eig^2)*100), function(x) signif(x,3))
   mdsAndTreatment <- data.frame(mds$points
                                 , as.factor(c(rep("2",3), rep("7",3))))
-  pdf(paste("../analysis/MDS Allen A9 Marker in hESC A9 minModSize30 mod-"
-            , module, "-", i, sep = ""), height=8, width=8)
+  pdf(paste("../analysis/Allen hESC A9 PCA readDF", readDepthFilt
+            , " ModSize30 mod-", module, "-", i, ".pdf", sep = "")
+      , height=8, width=8)
   plot(x = mdsAndTreatment[,1], y = mdsAndTreatment[,2]
        , col = as.numeric(as.factor(mdsAndTreatment[,3]))
        , pch = 16, asp=1
        , main = paste("allen-A9-marker-expr-in-hESC-A9.R\nMDS Plot By Module"
-          , "Marker Gene Expression\nmodule:", module, sep = "")
+          , "Marker Gene Expression\nmodule:", module
+          , " read depth filter: ", readDepthFilt, sep = "")
        , xlab = paste("PC1 (", signif(100*pc1,3), "%)", sep="")
        , ylab = paste("PC2 (", signif(100*pc2,3),"%)",sep=""))
   legend("bottomright", levels(mdsAndTreatment[,3])
@@ -157,6 +166,7 @@ modSizes <- c(30, 30, 30, 100, 100, 100
 i <- 0
 for (modSize in modSizes) {
   print(modSize)
+  # Counter used to save graphs with different names so as not to overwrite
   i <- i + 1
   print(i)
   randomModuleDF <- RandomModule(modNetworkToUse, modSize)
@@ -171,6 +181,7 @@ for (modSize in modSizes) {
 
 # PCA for A9 modules identified from Allen
 for (modToUse in modsToUse) {
+  # Empty variable that was used in random module PCA above
   i <- ""
   print(modToUse)
   markerModulesLDF <- SelectModule(modNetworkToUse, modToUse)
