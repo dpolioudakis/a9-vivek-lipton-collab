@@ -18,9 +18,11 @@ load("../processed_data/array_data_subset_avg_probes.rda")
 # Vivek normalized RNAseq FPKMs from hESC derived A9 neuronal cultures
 load("../Vivek_WGCNA_Lipton_A9_SN/HTSeqUnion_Exon_CQN_OutlierRemoved_A9cells.rda")
 load("../Vivek_WGCNA_Lipton_A9_SN/HTSeqUnion_Exon_CQN_OutlierRemoved_A9cells_0.rda")
+load("../Vivek_WGCNA_Lipton_A9_SN/HTSeqUnion_Exon_CQN_OutlierRemoved_A9cells_5.rda")
 
 # variable for read depth filter to record in output graph titles
-readDepthFilt <- "0"
+readDepthFilt <- "5"
+minModSize <- "100"
 
 # bwModulesLL is list of modules from different blockwiseModules parameters used
 # 12 corresponds to softPower 9, minModSize 30, deepSplit 2,
@@ -34,8 +36,7 @@ modsToUse <- c("plum1", "grey60", "brown", "red", "cyan", "yellowgreen"
                , "sienna3", "royalblue")
 
 modNetworkToUse <- 18
-modsToUse <- c("salmon", "blue", "purple")
-modsToUse <- c("salmon")
+modsToUse <- c("salmon", "brown", "blue", "purple", "greenyellow")
 print("#######################################################################")
 
 # Two general functions to load:
@@ -144,26 +145,29 @@ PlotMDS <- function (exprDF, module, i) {
   # lapply((mds$eig^2 / sum(mds$eig^2)*100), function(x) signif(x,3))
   mdsAndTreatment <- data.frame(mds$points
                                 , as.factor(c(rep("2",3), rep("7",3))))
-  pdf(paste("../analysis/Allen hESC A9 PCA readDF", readDepthFilt
-            , " ModSize30 mod-", module, "-", i, ".pdf", sep = "")
-      , height=8, width=8)
+#   pdf(paste("../analysis/Allen hESC A9 PCA readDF", readDepthFilt
+#             , " ModSize30 mod-", module, "-", i, ".pdf", sep = "")
+#       , height=8, width=8)
   plot(x = mdsAndTreatment[,1], y = mdsAndTreatment[,2]
        , col = as.numeric(as.factor(mdsAndTreatment[,3]))
        , pch = 16, asp=1
        , main = paste("allen-A9-marker-expr-in-hESC-A9.R\nMDS Plot By Module"
-          , "Marker Gene Expression\nmodule:", module
-          , " read depth filter: ", readDepthFilt, sep = "")
+          , " Marker Gene Expression\nmodule:", module
+          , " read depth filter:", readDepthFilt, sep = "")
        , xlab = paste("PC1 (", signif(100*pc1,3), "%)", sep="")
        , ylab = paste("PC2 (", signif(100*pc2,3),"%)",sep=""))
   legend("bottomright", levels(mdsAndTreatment[,3])
          , col=1:length(levels(mdsAndTreatment[,3])), pch=16, cex=0.8)
-  dev.off()
+  # dev.off()
 }
 
 # PCA for some randomly drawn modules as well as all genes in the network
 modSizes <- c(30, 30, 30, 100, 100, 100
   , length(bwModulesLL[[modNetworkToUse]]$colors))
 i <- 0
+pdf(paste("../analysis/Allen hESC A9 PCA readDF", readDepthFilt
+          , " ", minModSize, ".pdf", sep = "")
+    , height=8, width=8)
 for (modSize in modSizes) {
   print(modSize)
   # Counter used to save graphs with different names so as not to overwrite
@@ -193,6 +197,61 @@ for (modToUse in modsToUse) {
   markerModulesA9DF <- markerModulesA9DF[ ,-1]
   PlotMDS(markerModulesA9DF, modToUse, i)
 }
+dev.off()
+print("#######################################################################")
+
+# Mean of expression fold changes for each module marker gene in high MEF2C
+# versus low MEF2C
+# Make list of data frames of expression (normalized FPKM) for each gene
+# Each list element is a module
+markerModulesA9LDF <- NULL
+for (modToUse in modsToUse) {
+  print(modToUse)
+  markerModulesLDF <- SelectModule(modNetworkToUse, modToUse)
+  # markerModulesLDF <- SelectModule(modNetworkToUse, "plum1")
+  # Subset genes in module to only those found in Lipton hESC A9 data
+  markerModulesA9LDF[[modToUse]] <-SubsetMarkerModInA9(markerModulesLDF)
+}
+
+# Calculate ratio of expression in high MEF2C samples versus low MEF2C samples
+# for each gene in each module
+# List (modules) of lists (each gene in that module)
+ratioExprLL <- lapply(markerModulesA9LDF, 
+                      function(x) {
+                        markExpr <- dcast(x, Row.names~sample, value.var="expression")
+                        row.names(markExpr) <- markExpr[ ,1]
+                        markExpr <- markExpr[ ,-1]
+                        apply(markExpr, 1, function(x) (sum(x[1:3]) / sum(x[4:6])))
+                      }
+)
+# Mean ratio of expression in each module
+sapply(ratioExprLL, mean)
+# Paired T-test of high MEF2C versus low MEF2C expression (not ratios) for each
+# module
+sapply(markerModulesA9LDF, function(module) {
+  highMEF2C <- module[module$bio.rep=="2", ]$expression
+  lowMEF2C <-  module[module$bio.rep=="7", ]$expression
+  round(t.test(highMEF2C, lowMEF2C, paired = TRUE)$p.value, 5)
+})
+
+# Boxplot of expression ratios for each module
+ratioExprDF <- melt(ratioExprLL)
+colnames(ratioExprDF) <- c("ratio.expr", "module")
+ggplot(data = ratioExprDF, aes(x=module, y=ratio.expr)) + 
+  geom_boxplot() +
+  # geom_boxplot(aes(fill=module)) +
+  coord_cartesian(ylim = c(0, 2)) +
+  labs(title = paste(
+    "allen-A9-marker-expr-in-hESC-A9.R\nAllen derived A9 marker expression in"
+    , "Lipton A9\nread depth filter: ", readDepthFilt)
+    , sep = "") +
+  ylab("Mean Expression (normalized FPKM)") +
+  xlab("Treatment") +
+  theme_grey(base_size = 14) +
+  theme(axis.text = element_text(color = "black")) +
+  ggsave(file = paste(
+    "../analysis/Allen hESC A9 ratio expr readDF", readDepthFilt
+    , " ModSize30 mod-", modToUse, "-", Sys.Date(), ".pdf", sep=""))
 print("#######################################################################")
 
 # Mean expression
@@ -238,56 +297,3 @@ for (modToUse in modsToUse) {
   )
 }
 print("#######################################################################")
-
-# Mean of expression fold changes for each module marker gene in high MEF2C
-# versus low MEF2C
-# Make list of data frames of expression (normalized FPKM) for each gene
-# Each list element is a module
-markerModulesA9LDF <- NULL
-for (modToUse in modsToUse) {
-  print(modToUse)
-  markerModulesLDF <- SelectModule(modNetworkToUse, modToUse)
-  # markerModulesLDF <- SelectModule(modNetworkToUse, "plum1")
-  # Subset genes in module to only those found in Lipton hESC A9 data
-  markerModulesA9LDF[[modToUse]] <-SubsetMarkerModInA9(markerModulesLDF)
-}
-
-# Calculate ratio of expression in high MEF2C samples versus low MEF2C samples
-# for each gene in each module
-# List (modules) of lists (each gene in that module)
-ratioExprLL <- lapply(markerModulesA9LDF, 
-  function(x) {
-    markExpr <- dcast(x, Row.names~sample, value.var="expression")
-    row.names(markExpr) <- markExpr[ ,1]
-    markExpr <- markExpr[ ,-1]
-    apply(markExpr, 1, function(x) (sum(x[1:3]) / sum(x[4:6])))
-  }
-)
-# Mean ratio of expression in each module
-sapply(ratioExprLL, mean)
-# Paired T-test of high MEF2C versus low MEF2C expression (not ratios) for each
-# module
-sapply(markerModulesA9LDF, function(module) {
-  highMEF2C <- module[module$bio.rep=="2", ]$expression
-  lowMEF2C <-  module[module$bio.rep=="7", ]$expression
-  t.test(highMEF2C, lowMEF2C, paired = TRUE)$p.value
-})
-
-# Boxplot of expression ratios for each module
-ratioExprDF <- melt(ratioExprLL)
-colnames(ratioExprDF) <- c("ratio.expr", "module")
-ggplot(data = ratioExprDF, aes(x=module, y=ratio.expr)) + 
-  geom_boxplot() +
-  # geom_boxplot(aes(fill=module)) +
-  labs(title = paste(
-  "allen-A9-marker-expr-in-hESC-A9.R\nAllen derived A9 marker expression in"
-  , "Lipton A9\nmodule: ", modToUse)
-  , sep = "") +
-  ylab("Mean Expression (normalized FPKM)") +
-  xlab("Treatment") +
-  theme_grey(base_size = 14) +
-  theme(axis.text = element_text(color = "black") +
-  ggsave(file = paste(
-    "../analysis/Allen A9 marker ratio expr in hESC A9 minModSize30 mod-"
-    , modToUse, "-", Sys.Date(), ".pdf", sep=""))
-)
