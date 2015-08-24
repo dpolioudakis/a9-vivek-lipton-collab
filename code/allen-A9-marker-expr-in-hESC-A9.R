@@ -30,11 +30,13 @@ minModSize <- "100"
 modNetworkToUse <- 12
 modsToUse <- c("saddlebrown", "salmon", "red", "pink", "black", "green"
                , "grey60")
-
+# 11 corresponds to softPower 7, minModSize 30, deepSplit 2,
+# MEmergeCutHeight 0.25, maxBlockSize 12000
 modNetworkToUse <- 11
 modsToUse <- c("plum1", "grey60", "brown", "red", "cyan", "yellowgreen"
                , "sienna3", "royalblue")
-
+# 12 corresponds to softPower 9, minModSize 100, deepSplit 2,
+# MEmergeCutHeight 0.25, maxBlockSize 12000
 modNetworkToUse <- 18
 modsToUse <- c("salmon", "brown", "blue", "purple", "greenyellow")
 print("#######################################################################")
@@ -237,6 +239,7 @@ sapply(markerModulesA9LDF, function(module) {
 # Boxplot of expression ratios for each module
 ratioExprDF <- melt(ratioExprLL)
 colnames(ratioExprDF) <- c("ratio.expr", "module")
+# Preserve module order in boxplot
 ratioExprDF$module <- factor(ratioExprDF$module
                             , levels = as.character(unique(ratioExprDF$module)))
 ggplot(data = ratioExprDF, aes(x=module, y=ratio.expr)) + 
@@ -253,7 +256,7 @@ ggplot(data = ratioExprDF, aes(x=module, y=ratio.expr)) +
   theme(axis.text = element_text(color = "black")) +
   ggsave(file = paste(
     "../analysis/Allen hESC A9 ratio expr readDF", readDepthFilt
-    , " ModSize", minModSize, "-", Sys.Date(), ".pdf", sep=""))
+    , " ModSize", minModSize, ".pdf", sep=""))  #  "-", Sys.Date(),
 print("#######################################################################")
 
 # Mean expression
