@@ -166,7 +166,7 @@ modSizes <- c(30, 30, 30, 100, 100, 100
   , length(bwModulesLL[[modNetworkToUse]]$colors))
 i <- 0
 pdf(paste("../analysis/Allen hESC A9 PCA readDF", readDepthFilt
-          , " ", minModSize, ".pdf", sep = "")
+          , " minMod", minModSize, ".pdf", sep = "")
     , height=8, width=8)
 for (modSize in modSizes) {
   print(modSize)
@@ -237,6 +237,8 @@ sapply(markerModulesA9LDF, function(module) {
 # Boxplot of expression ratios for each module
 ratioExprDF <- melt(ratioExprLL)
 colnames(ratioExprDF) <- c("ratio.expr", "module")
+ratioExprDF$module <- factor(ratioExprDF$module
+                            , levels = as.character(unique(ratioExprDF$module)))
 ggplot(data = ratioExprDF, aes(x=module, y=ratio.expr)) + 
   geom_boxplot() +
   # geom_boxplot(aes(fill=module)) +
@@ -251,7 +253,7 @@ ggplot(data = ratioExprDF, aes(x=module, y=ratio.expr)) +
   theme(axis.text = element_text(color = "black")) +
   ggsave(file = paste(
     "../analysis/Allen hESC A9 ratio expr readDF", readDepthFilt
-    , " ModSize30 mod-", modToUse, "-", Sys.Date(), ".pdf", sep=""))
+    , " ModSize", minModSize, "-", Sys.Date(), ".pdf", sep=""))
 print("#######################################################################")
 
 # Mean expression
