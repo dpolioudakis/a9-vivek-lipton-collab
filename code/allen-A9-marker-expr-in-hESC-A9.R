@@ -22,7 +22,7 @@ load("../Vivek_WGCNA_Lipton_A9_SN/HTSeqUnion_Exon_CQN_OutlierRemoved_A9cells_5.r
 
 # variable for read depth filter to record in output graph titles
 readDepthFilt <- "5"
-minModSize <- "100"
+minModSize <- "30"
 
 # bwModulesLL is list of modules from different blockwiseModules parameters used
 # 12 corresponds to softPower 9, minModSize 30, deepSplit 2,
@@ -302,3 +302,27 @@ for (modToUse in modsToUse) {
   )
 }
 print("#######################################################################")
+
+# # General Linear Model
+# 
+# # Mean of expression fold changes for each module marker gene in high MEF2C
+# # versus low MEF2C
+# # Make list of data frames of expression (normalized FPKM) for each gene
+# # Each list element is a module
+# markerModulesA9LDF <- NULL
+# for (modToUse in modsToUse) {
+#   print(modToUse)
+#   markerModulesLDF <- SelectModule(modNetworkToUse, modToUse)
+#   # markerModulesLDF <- SelectModule(modNetworkToUse, "plum1")
+#   # Subset genes in module to only those found in Lipton hESC A9 data
+#   markerModulesA9LDF[[modToUse]] <-SubsetMarkerModInA9(markerModulesLDF)
+# }
+# 
+# lapply(markerModulesA9LDF, function(module) {
+#   module <- dcast(module, sample~Row.names, value.var = "expression")
+#   module$biorep <- c(rep(2, 3), rep(7, 3))
+#   model <- glm(data = module[ ,-1], as.factor(biorep)~., family = binomial("logit"))
+#   # summary(model)
+#   model
+# }
+# )
