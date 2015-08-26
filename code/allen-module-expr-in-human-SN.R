@@ -16,7 +16,10 @@ minModSize <- "30"
 # bwModulesLL is list of modules from different blockwiseModules parameters used
 # 11 corresponds to softPower 7, minModSize 30, deepSplit 2,
 # MEmergeCutHeight 0.25, maxBlockSize 12000
-modNetworkToUse <- 11
+# 18corresponds to softPower 9, minModSize 100, deepSplit 2,
+# MEmergeCutHeight 0.25, maxBlockSize 12000
+# modNetworkToUse <- 11
+modNetworkToUse <- 18
 
 # Split by model into lists or dataframes of genes in each model
 allenGenesModelsLL <- split(colnames(exprData)
@@ -74,19 +77,3 @@ ggplot(ratiosExprDF, aes(x = modules, y = ratios)) +
      theme(axis.text = element_text(color = "black"))
      ggsave(file = paste(
      "../analysis/Allen module expression in human substantia nigra.pdf", sep=""))
-
-ggplot(data = ratioExprDF, aes(x=module, y=ratio.expr)) + 
-     geom_boxplot() +
-     # geom_boxplot(aes(fill=module)) +
-     coord_cartesian(ylim = c(0, 2)) +
-     labs(title = paste(
-          "allen-A9-marker-expr-in-hESC-A9.R\nAllen derived A9 marker expression in"
-          , "Lipton A9\nread depth filter: ", readDepthFilt)
-          , sep = "") +
-     ylab("Mean Expression (normalized FPKM)") +
-     xlab("Treatment") +
-     theme_grey(base_size = 14) +
-     theme(axis.text = element_text(color = "black")) +
-     ggsave(file = paste(
-          "../analysis/Allen hESC A9 ratio expr readDF", readDepthFilt
-          , " ModSize", minModSize, ".pdf", sep=""))  #  "-", Sys.Date(),
