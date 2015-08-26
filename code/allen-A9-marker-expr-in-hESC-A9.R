@@ -22,7 +22,7 @@ load("../Vivek_WGCNA_Lipton_A9_SN/HTSeqUnion_Exon_CQN_OutlierRemoved_A9cells_5.r
 
 # variable for read depth filter to record in output graph titles
 readDepthFilt <- "5"
-minModSize <- "30"
+minModSize <- "100"
 
 # bwModulesLL is list of modules from different blockwiseModules parameters used
 # 12 corresponds to softPower 9, minModSize 30, deepSplit 2,
@@ -370,7 +370,7 @@ markerMEinA9 <- allenMEinA9[allenMEinA9$module %in% MEtoUse, ]
 
 markerMEinA9$module <- factor(markerMEinA9$module
                              , levels = as.character(unique(MEtoUse)))
- 
+
 # Boxplot of marker modules
 ggplot(data = markerMEinA9, aes(x = module, y = MEexpression)) +
   geom_boxplot(aes(fill=as.factor(biorep))) +
@@ -407,68 +407,20 @@ ggsave(file = paste(
   "../analysis/Allen ME expr in A9 readDF", readDepthFilt
   , " ModSize", minModSize, ".pdf", sep=""))
 
-
-
-
-  
-  
-
-ggplot(markers.exp.df, aes(x=gene, y=expression)) + 
-  geom_boxplot(aes(fill=bio.rep)) +
-  scale_fill_discrete(name= "Biological\nReplicate",
-                      labels= c("2_", "7_")) +
-  labs(title= "A9 marker expression") +
-  ylab("Expression (normalized FPKM)") +
-  xlab("Gene") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-ggsave(file= "A9 marker gene expression.pdf")
-
+# Boxplot all modules - not separated by treatment group
+ggplot(data = allenMEinA9, aes(x = module, y = MEexpression)) +
   geom_boxplot() +
-  # geom_boxplot(aes(fill=module)) +
-  coord_cartesian(ylim = c(0, 2)) +
+  ylab("ME Expression (arbitrary value)") +
+  xlab("Module") +
   labs(title = paste(
-    "allen-A9-marker-expr-in-hESC-A9.R\nAllen derived A9 marker expression in"
-    , "Lipton A9\nread depth filter: ", readDepthFilt)
+    "allen-A9-marker-expr-in-hESC-A9.R"
+    , "\nAllen marker ME expression in Lipton A9"
+    , "\nNot separated by treatment group"
+    , "\nread depth filter: ", readDepthFilt)
     , sep = "") +
-  ylab("Mean Expression (normalized FPKM)") +
-  xlab("Treatment") +
-  theme_grey(base_size = 14) +
-  theme(axis.text = element_text(color = "black")) +
-  ggsave(file = paste(
-    "../analysis/Allen hESC A9 ratio expr readDF", readDepthFilt
-    , " ModSize", minModSize, ".pdf", sep=""))  #  "-", Sys.Date(),
-
-
-
-# Each list of metaDataSubsetLDF is a DF of metadata corresponding to each brain
-# Brains and samples are listed in the order of the observations in blockwiseMEs
-# Make vector of structure acronyms in order of blockwiseMEs
-brainRegionV <- NULL
-brainRegionV <- lapply(metaDataSubsetLDF
-                       , function(x) c(brainRegionV, as.character(x$structure_acronym)))
-brainRegionV <- unlist(brainRegionV)
-brainRegionV <- as.factor(brainRegionV)
-# Boxplots of the ME expression by brain region for each ME
-# sizeGrWindow(12,12)
-# par(mfrow = c(12,3))
-# par(las=2)
-# Make list of DFs
-#   Col 1: ME expression
-#   Col 2: brain region
-#   Rows: Samples
-MEbrainRegionLDF <- lapply(blockwiseMEs
-                           , function(ME) data.frame(ME, brainRegionV))
-MEnames <- names(MEbrainRegionLDF)
-# Loop through list of ME expression and brain region and list of ME name
-# and plot separate graph for each ME
-pdf("../analysis/bwME_expr_by_brain_region_midModSize30.pdf")
-par(cex = 1.25)
-for(i in 1:length(MEbrainRegionLDF)) {
-  boxplot(ME~brainRegionV, data=MEbrainRegionLDF[[i]]
-          , main = paste("allen-ME-expr-by-brain-region.R"
-                         , "\nModule Eigengene Expression in Allen by Brain Region"
-                         , "\n", MEnames[[i]], sep="")
-          , ylab = "ME Expression (arbitrary value)"
-          , xlab = "Brain region")
-}
-dev.off()
+  theme_grey(base_size = 20) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  theme(axis.text = element_text(color = "black"))
+ggsave(file = paste(
+  "../analysis/Allen marker ME expr in A9 combined Tx readDF", readDepthFilt
+  , " ModSize", minModSize, ".pdf", sep=""))
