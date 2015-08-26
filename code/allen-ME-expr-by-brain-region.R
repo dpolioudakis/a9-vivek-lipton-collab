@@ -23,7 +23,7 @@ load("../processed_data/allen_BW_modules.rda")
 load("../processed_data/array_data_subset_avg_probes.rda")
 
 # bwModules is list of modules from 3 different ME merge cut heights
-blockwiseMEs <- moduleEigengenes(exprData, bwModules[[3]]$colors)$eigengenes
+blockwiseMEs <- moduleEigengenes(exprData, bwModulesLL[[11]]$colors)$eigengenes
 
 # Each list of metaDataSubsetLDF is a DF of metadata corresponding to each brain
 # Brains and samples are listed in the order of the observations in blockwiseMEs
@@ -46,13 +46,17 @@ MEbrainRegionLDF <- lapply(blockwiseMEs
 MEnames <- names(MEbrainRegionLDF)
 # Loop through list of ME expression and brain region and list of ME name
 # and plot separate graph for each ME
+pdf("../analysis/bwME_expr_by_brain_region_midModSize30.pdf")
+par(cex = 1.25)
 for(i in 1:length(MEbrainRegionLDF)) {
-  pdf(paste("../analysis/3b_BW_ME_region_corr.pdf",i))
-  boxplot(ME~brainRegionV, data=MEbrainRegionLDF[[i]], main=MEnames[[i]]
+  boxplot(ME~brainRegionV, data=MEbrainRegionLDF[[i]]
+          , main = paste("allen-ME-expr-by-brain-region.R"
+                      , "\nModule Eigengene Expression in Allen by Brain Region"
+                      , "\n", MEnames[[i]], sep="")
           , ylab = "ME Expression (arbitrary value)"
           , xlab = "Brain region")
-  dev.off()
 }
+dev.off()
 
 
 
