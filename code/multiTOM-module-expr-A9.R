@@ -14,10 +14,13 @@ dataMTmark30DF <- read.csv(
   "../processed_data/multiTOM_allen_neighbors30_ALDH1A1_TH_SLC18A2_KCNJ6.csv")
 dataMTanti30DF <- read.csv(
   "../processed_data/multiTOM_allen_neighbors30_CALB1.csv")
+dataMTanti100DF <- read.csv(
+  "../processed_data/multiTOM_allen_neighbors100_CALB1.csv")
 
 dataMTLDF <- list(  dataMTmark30DF = dataMTmark30DF[ ,1]
                   , dataMTmark100DF = dataMTmark100DF[, 1]
-                  , dataMTanti30DF = dataMTanti30DF[, 1])
+                  , dataMTanti30DF = dataMTanti30DF[, 1]
+                  , dataMTanti100DF = dataMTanti100DF[, 1])
 
 print("#######################################################################")
 
@@ -108,13 +111,19 @@ ratioExprDF$module <- factor(ratioExprDF$module
                              , levels = as.character(unique(ratioExprDF$module)))
 ggplot(data = ratioExprDF, aes(x=module, y=ratio.expr)) + 
   geom_boxplot() +
+  scale_x_discrete(labels = c(  "30 Gene Marker"
+                                , "100 Gene Marker"
+                                , "30 Gene Anti-marker"
+                                , "100 Gene Anti-marker")) +
   # geom_boxplot(aes(fill=module)) +
   coord_cartesian(ylim = c(0, 2)) +
   labs(title = paste(
     "multiTOM-module-expr-A9.R
-    Mean ratio of expression of muliTOM module genes in hESC A9
-    high MEF2C samples versus low MEF2C samples")
-    , sep = "") +
+    Mean ratio of expression of multiTOM module genes in hESC A9
+    high MEF2C samples versus low MEF2C samples"
+    , "\nMarker Module Seeds: ALDH1A1, TH, SLC18A2, KCNJ6"
+    , "\nAnti-marker Module Seeds: CALB1"
+    , sep = "")) +
   ylab("Mean Expression Ratio") +
   xlab("multiTOM module") +
   theme_grey(base_size = 20) +
