@@ -328,10 +328,10 @@ print("#######################################################################")
 # )
 print("#######################################################################")
 
-load("../processed_data/allen_BW_modules.rda")
-load("../processed_data/array_data_subset_avg_probes.rda")
+# Boxplot of Allen module eigengene expressions in Lipton's hESC A9 cultures 
 
-genesColorsDF <- data.frame(colnames(exprData), bwModulesLL[[modNetworkToUse]]$colors)
+genesColorsDF <- data.frame(colnames(exprData)
+                            , bwModulesLL[[modNetworkToUse]]$colors)
 colnames(genesColorsDF) <- c("gene", "module")
 
 AddEnsembl <- function (geneList) {
@@ -355,10 +355,10 @@ AddEnsembl <- function (geneList) {
 genesEnsemblDF <- AddEnsembl(colnames(exprData))
 ensemblColorsDF <- merge(genesEnsemblDF, genesColorsDF
                          , by.x = "hgnc_symbol", by.y = "gene")
-head(ensemblColorsDF)
 
 exprA9DF <- data.frame(datExpr.HTSC.A9)
-modulesA9 <- merge(ensemblColorsDF, exprA9DF, by.x = "ensembl_gene_id", by.y = "row.names" )
+modulesA9 <- merge(ensemblColorsDF, exprA9DF
+                   , by.x = "ensembl_gene_id", by.y = "row.names" )
 
 allenMEinA9 <- moduleEigengenes(t(modulesA9[ ,4:9]), modulesA9$module)$eigengenes
 allenMEinA9$biorep <- c(rep(2, 3), rep(7, 3))
@@ -371,22 +371,41 @@ markerMEinA9 <- allenMEinA9[allenMEinA9$module %in% MEtoUse, ]
 markerMEinA9$module <- factor(markerMEinA9$module
                              , levels = as.character(unique(MEtoUse)))
  
-
+# Boxplot of marker modules
 ggplot(data = markerMEinA9, aes(x = module, y = MEexpression)) +
   geom_boxplot(aes(fill=as.factor(biorep))) +
   scale_fill_discrete(name= "Biological\nReplicate",
                       labels= c("2_HighMEF2C", "7_LowMEF2C")) +
+  ylab("ME Expression (arbitrary value)") +
+  xlab("Module") +
+  labs(title = paste(
+    "allen-A9-marker-expr-in-hESC-A9.R\nAllen marker ME expression in"
+    , "Lipton A9\nread depth filter: ", readDepthFilt)
+    , sep = "") +
   theme_grey(base_size = 20) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   theme(axis.text = element_text(color = "black"))
+ggsave(file = paste(
+  "../analysis/Allen marker ME expr in A9 readDF", readDepthFilt
+  , " ModSize", minModSize, ".pdf", sep=""))
 
+# Boxplot all modules
 ggplot(data = allenMEinA9, aes(x = module, y = MEexpression)) +
   geom_boxplot(aes(fill=as.factor(biorep))) +
   scale_fill_discrete(name= "Biological\nReplicate",
                       labels= c("2_HighMEF2C", "7_LowMEF2C")) +
+  ylab("ME Expression (arbitrary value)") +
+  xlab("Module") +
+  labs(title = paste(
+    "allen-A9-marker-expr-in-hESC-A9.R\nAllen ME expression in"
+    , "Lipton A9\nread depth filter: ", readDepthFilt)
+    , sep = "") +
   theme_grey(base_size = 20) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   theme(axis.text = element_text(color = "black"))
+ggsave(file = paste(
+  "../analysis/Allen ME expr in A9 readDF", readDepthFilt
+  , " ModSize", minModSize, ".pdf", sep=""))
 
 
 
