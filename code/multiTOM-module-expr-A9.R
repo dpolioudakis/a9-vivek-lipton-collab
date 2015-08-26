@@ -34,7 +34,7 @@ AddEnsembl <- function (moduleGenes) {
                              , mart = ensembl)
   moduleEnsembDF
 }
-
+# List of data frames of Ensembl ID and Gene symbol
 ensemblMTLDF <- lapply(dataMTLDF, AddEnsembl)
 
 # Subset hESC A9 data by multiTOM modules
@@ -60,12 +60,12 @@ SubsetMarkerModInA9 <- function (moduleEnsemblDF) {
                              , rep(7,numGenesInTreatmentGroup))))
   markersExprDF
 }
-
+# List of data frames of genes and gene expression in hESC A9 cells
 MTmodA9exprLDF <- lapply(ensemblMTLDF, SubsetMarkerModInA9)
-
 
 # Mean of expression fold changes for each module marker gene in high MEF2C
 # versus low MEF2C
+
 # Make list of data frames of expression (normalized FPKM) for each gene
 # Each list element is a module
 markerModulesA9LDF <- NULL
@@ -76,7 +76,6 @@ for (modToUse in modsToUse) {
   # Subset genes in module to only those found in Lipton hESC A9 data
   markerModulesA9LDF[[modToUse]] <-SubsetMarkerModInA9(markerModulesLDF)
 }
-
 # Calculate ratio of expression in high MEF2C samples versus low MEF2C samples
 # for each gene in each module
 # List (modules) of lists (each gene in that module)
