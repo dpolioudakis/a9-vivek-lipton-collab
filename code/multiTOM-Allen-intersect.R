@@ -1,6 +1,8 @@
 # Intersect Vivek's Lipton substantia nigra sample A9 modules and Allen brain A9
 # modules
 
+# Code in development, must be run in pieces depending on input multiTOM file
+
 library(reshape2)
 library(biomaRt)
 
