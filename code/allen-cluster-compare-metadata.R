@@ -2,12 +2,16 @@ print("#######################################################################")
 print("Starting allen-cluster-compare-meta-data.R script...")
 sessionInfo()
 
+library(cluster)
+library(flashClust)
+
+
 # Cluster samples and compare to meta data
 
-load("../processed_data/array.data.subset.avg.probes.rda")
+load("../processed_data/array_data_subset_avg_probes.rda")
 
 # Transpose expression data and assign column names from column 1
-sn.expr.data <- t(subset.sn.array.data)
+sn.expr.data <- t(arrayDataSubsetAvgProbesDF)
 colnames(sn.expr.data) <- sn.expr.data[1, ]
 sn.expr.data <- sn.expr.data[-1, ]
 
@@ -16,6 +20,7 @@ sn.expr.data.top.5000 <- sn.expr.data[,rank(-colMeans(sn.expr.data))<=5000]
 
 
 expr.data= sn.expr.data.top.5000
+expr.data <- sn.expr.data
 
 # Allen brain IDs derived from Allan brain folder names
 brain.ids <- list(
@@ -28,11 +33,17 @@ brain.ids <- list(
 )
 
 # Add column of brain IDs to meta data for each brain
-trait.data <- mapply(function(brain.meta.data, brain.id)
-                        cbind(brain.meta.data, brain.id)
-                        , subset.sn.meta.data, brain.ids, SIMPLIFY= FALSE)
+trait.data <- mapply(function(metaDataSubsetLDF, brain.id)
+                        cbind(metaDataSubsetLDF, brain.id)
+                        , metaDataSubsetLDF, brain.ids, SIMPLIFY= FALSE)
+trait.data <- mapply(function(metaDataSubsetLDF, brain.id)
+  cbind(metaDataSubsetLDF, brain.id)
+  , arrayDataSubsetAvgProbesDF, brain.ids, SIMPLIFY= FALSE)
 # Combine list of meta data for each brain into one data frame
 trait.data <- do.call(rbind, trait.data)
+trait.data[,7] <- as.factor(trait.data[,7])
+
+trait.data <- head(trait.data)
 
 # Cluster samples
 sampleTree2 = hclust(dist(expr.data), method = "average")
