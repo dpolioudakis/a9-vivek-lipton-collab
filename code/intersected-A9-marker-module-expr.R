@@ -1,3 +1,6 @@
+# Expression Ratio of intersected Allen and Lipton A9 marker modules in Lipton
+# hESC A9 cells
+
 library(biomaRt)
 
 load("../processed_data/allen_BW_modules.rda")
