@@ -326,3 +326,130 @@ print("#######################################################################")
 #   model
 # }
 # )
+print("#######################################################################")
+
+load("../processed_data/allen_BW_modules.rda")
+load("../processed_data/array_data_subset_avg_probes.rda")
+
+genesColorsDF <- data.frame(colnames(exprData), bwModulesLL[[modNetworkToUse]]$colors)
+colnames(genesColorsDF) <- c("gene", "module")
+
+AddEnsembl <- function (geneList) {
+  moduleGenes <- data.frame(geneList)
+  # bioMart manual:
+  # http://bioconductor.org/packages/release/bioc/vignettes/biomaRt/inst/doc/biomaRt.pdf
+  # Attribute: values to retrieve
+  # Filters: input query type
+  # Values: input query
+  ensembl <- useMart("ensembl")
+  ensembl <- useDataset("hsapiens_gene_ensembl",mart=ensembl)
+  # Data frame of module Ensembl IDs and gene symbols
+  moduleEnsemblDF <- getBM(  attributes = c("ensembl_gene_id", "hgnc_symbol")
+                             , filters = "hgnc_symbol"
+                             , values = moduleGenes
+                             , mart = ensembl)
+  moduleEnsemblDF
+}
+
+# List of data frames of Ensembl ID and Gene symbol
+genesEnsemblDF <- AddEnsembl(colnames(exprData))
+ensemblColorsDF <- merge(genesEnsemblDF, genesColorsDF
+                         , by.x = "hgnc_symbol", by.y = "gene")
+head(ensemblColorsDF)
+
+exprA9DF <- data.frame(datExpr.HTSC.A9)
+modulesA9 <- merge(ensemblColorsDF, exprA9DF, by.x = "ensembl_gene_id", by.y = "row.names" )
+
+allenMEinA9 <- moduleEigengenes(t(modulesA9[ ,4:9]), modulesA9$module)$eigengenes
+allenMEinA9$biorep <- c(rep(2, 3), rep(7, 3))
+allenMEinA9 <- melt(allenMEinA9, id.vars = "biorep")
+colnames(allenMEinA9) <- c("biorep", "module", "MEexpression")
+
+MEtoUse <- sapply(modsToUse, function(mod) paste("ME", mod, sep=""))
+markerMEinA9 <- allenMEinA9[allenMEinA9$module %in% MEtoUse, ]
+
+markerMEinA9$module <- factor(markerMEinA9$module
+                             , levels = as.character(unique(MEtoUse)))
+ 
+
+ggplot(data = markerMEinA9, aes(x = module, y = MEexpression)) +
+  geom_boxplot(aes(fill=as.factor(biorep))) +
+  scale_fill_discrete(name= "Biological\nReplicate",
+                      labels= c("2_HighMEF2C", "7_LowMEF2C")) +
+  theme_grey(base_size = 20) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  theme(axis.text = element_text(color = "black"))
+
+ggplot(data = allenMEinA9, aes(x = module, y = MEexpression)) +
+  geom_boxplot(aes(fill=as.factor(biorep))) +
+  scale_fill_discrete(name= "Biological\nReplicate",
+                      labels= c("2_HighMEF2C", "7_LowMEF2C")) +
+  theme_grey(base_size = 20) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  theme(axis.text = element_text(color = "black"))
+
+
+
+
+  
+  
+
+ggplot(markers.exp.df, aes(x=gene, y=expression)) + 
+  geom_boxplot(aes(fill=bio.rep)) +
+  scale_fill_discrete(name= "Biological\nReplicate",
+                      labels= c("2_", "7_")) +
+  labs(title= "A9 marker expression") +
+  ylab("Expression (normalized FPKM)") +
+  xlab("Gene") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+ggsave(file= "A9 marker gene expression.pdf")
+
+  geom_boxplot() +
+  # geom_boxplot(aes(fill=module)) +
+  coord_cartesian(ylim = c(0, 2)) +
+  labs(title = paste(
+    "allen-A9-marker-expr-in-hESC-A9.R\nAllen derived A9 marker expression in"
+    , "Lipton A9\nread depth filter: ", readDepthFilt)
+    , sep = "") +
+  ylab("Mean Expression (normalized FPKM)") +
+  xlab("Treatment") +
+  theme_grey(base_size = 14) +
+  theme(axis.text = element_text(color = "black")) +
+  ggsave(file = paste(
+    "../analysis/Allen hESC A9 ratio expr readDF", readDepthFilt
+    , " ModSize", minModSize, ".pdf", sep=""))  #  "-", Sys.Date(),
+
+
+
+# Each list of metaDataSubsetLDF is a DF of metadata corresponding to each brain
+# Brains and samples are listed in the order of the observations in blockwiseMEs
+# Make vector of structure acronyms in order of blockwiseMEs
+brainRegionV <- NULL
+brainRegionV <- lapply(metaDataSubsetLDF
+                       , function(x) c(brainRegionV, as.character(x$structure_acronym)))
+brainRegionV <- unlist(brainRegionV)
+brainRegionV <- as.factor(brainRegionV)
+# Boxplots of the ME expression by brain region for each ME
+# sizeGrWindow(12,12)
+# par(mfrow = c(12,3))
+# par(las=2)
+# Make list of DFs
+#   Col 1: ME expression
+#   Col 2: brain region
+#   Rows: Samples
+MEbrainRegionLDF <- lapply(blockwiseMEs
+                           , function(ME) data.frame(ME, brainRegionV))
+MEnames <- names(MEbrainRegionLDF)
+# Loop through list of ME expression and brain region and list of ME name
+# and plot separate graph for each ME
+pdf("../analysis/bwME_expr_by_brain_region_midModSize30.pdf")
+par(cex = 1.25)
+for(i in 1:length(MEbrainRegionLDF)) {
+  boxplot(ME~brainRegionV, data=MEbrainRegionLDF[[i]]
+          , main = paste("allen-ME-expr-by-brain-region.R"
+                         , "\nModule Eigengene Expression in Allen by Brain Region"
+                         , "\n", MEnames[[i]], sep="")
+          , ylab = "ME Expression (arbitrary value)"
+          , xlab = "Brain region")
+}
+dev.off()
