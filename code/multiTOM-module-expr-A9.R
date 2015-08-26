@@ -12,9 +12,12 @@ dataMTmark100DF <- read.csv(
   "../processed_data/multiTOM_allen_neighbors100_ALDH1A1_TH_SLC18A2_KCNJ6.csv")
 dataMTmark30DF <- read.csv(
   "../processed_data/multiTOM_allen_neighbors30_ALDH1A1_TH_SLC18A2_KCNJ6.csv")
+dataMTanti30DF <- read.csv(
+  "../processed_data/multiTOM_allen_neighbors30_CALB1.csv")
 
 dataMTLDF <- list(  dataMTmark30DF = dataMTmark30DF[ ,1]
-                  , dataMTmark100DF = dataMTmark100DF[, 1])
+                  , dataMTmark100DF = dataMTmark100DF[, 1]
+                  , dataMTanti30DF = dataMTanti30DF[, 1])
 
 print("#######################################################################")
 
