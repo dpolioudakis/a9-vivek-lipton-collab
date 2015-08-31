@@ -20,6 +20,7 @@ library(biomaRt)
 load("../processed_data/allen_BW_modules.rda")
 load("../Vivek_WGCNA_Lipton_A9_SN/HTSeqUnion_Exon_CQN_OutlierRemoved_A9cells_5.rda")
 load("../Vivek_WGCNA_Lipton_A9_SN/HTSeqUnion_Exon_CQN_OutlierRemoved_humanSN.rda")
+load("../Vivek_WGCNA_Lipton_A9_SN/HTSeqUnion_Exon_CQN_OutlierRemoved_humanSN_5.rda")
 
 # variable for read depth filter to record in output graph titles
 readDepthFilt <- "5"
