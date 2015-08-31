@@ -139,7 +139,7 @@ mdsLDF$title <- titles
 
 # MDS plots of Lipton data subset by each Allen module
 ggplot(mdsLDF, aes(x = X1, y = X2)) +
-  geom_point(aes(color = factor(type)), size = 2) +
+  geom_point(aes(color = factor(type)), size = 1.5) +
   facet_wrap(~title, ncol = 8, scales = "free") +
   scale_color_discrete(name = "Sample Type"
                        , labels = c("2_ High MEF2C", "7_ Low MEF2C"
@@ -151,7 +151,7 @@ ggplot(mdsLDF, aes(x = X1, y = X2)) +
     , "\nMDS plot: hESC A9 and human substantia nigra subset by Allen modules"
     , "\nread depth filter: ", readDepthFilt)
     , sep = "") +
-  theme_grey(base_size = 15) +
+  theme_grey(base_size = 14) +
   theme(axis.text = element_blank(), axis.ticks = element_blank())
 ggsave(file = paste(
   "../analysis/MDS - Allen modules hESC A9 and human substantia nigra readDF"
@@ -165,7 +165,7 @@ mdsMarkerLDF <- mdsMarkerLDF[order(mdsMarkerLDF$L1), ]
 mdsMarkerLDF$title <- factor(mdsMarkerLDF$title
                              , levels = as.character(unique(mdsMarkerLDF$title)))
 
-# MDS plots of Lipton data subset by each Allen module
+# MDS plots of Lipton data subset by each Allen marker module
 ggplot(mdsMarkerLDF, aes(x = X1, y = X2)) +
   geom_point(aes(color = factor(type)), size = 2) +
   facet_wrap(~title, ncol = 4, scales = "free") +
