@@ -1,4 +1,5 @@
-# Expression of A9 module 28 genes in hESC derived A9 neuronal cultures
+# Expression of A9 marker module identified from Allen data in hESC derived A9
+# neuronal cultures
 
 print("#######################################################################")
 print("Starting allen-A9-marker-expr-in-hESC-A9.R script...")
@@ -19,10 +20,14 @@ load("../processed_data/array_data_subset_avg_probes.rda")
 load("../Vivek_WGCNA_Lipton_A9_SN/HTSeqUnion_Exon_CQN_OutlierRemoved_A9cells.rda")
 load("../Vivek_WGCNA_Lipton_A9_SN/HTSeqUnion_Exon_CQN_OutlierRemoved_A9cells_0.rda")
 load("../Vivek_WGCNA_Lipton_A9_SN/HTSeqUnion_Exon_CQN_OutlierRemoved_A9cells_5.rda")
+# Normalized together RNA hESC A9 and human substantia nigra
+load("../Vivek_WGCNA_Lipton_A9_SN/HTSeqUnion_Exon_CQN_OutlierRemoved_A9_SN_RDF5_regSN.rda")
+datExpr.HTSC.A9 <- datExpr.HTSC.A9SN[ ,1:6]
+datExpr.HTSC.SN <- datExpr.HTSC.A9SN[ ,7:16]
 
 # variable for read depth filter to record in output graph titles
 readDepthFilt <- "5"
-minModSize <- "100"
+minModSize <- "30"
 
 # bwModulesLL is list of modules from different blockwiseModules parameters used
 # 12 corresponds to softPower 9, minModSize 30, deepSplit 2,
@@ -112,7 +117,7 @@ print("#######################################################################")
 # }
 # print("#######################################################################")
 
-# PCA plots
+# MDS plots
 
 RandomModule <- function (modNetworkToUse, modSizes) {
   blockwiseMEs <- moduleEigengenes(
@@ -248,15 +253,16 @@ ggplot(data = ratioExprDF, aes(x=module, y=ratio.expr)) +
   coord_cartesian(ylim = c(0, 2)) +
   labs(title = paste(
     "allen-A9-marker-expr-in-hESC-A9.R\nAllen derived A9 marker expression in"
-    , "Lipton A9\nread depth filter: ", readDepthFilt)
-    , sep = "") +
+    , "Lipton A9\nread depth filter: ", readDepthFilt
+    , "\nA9 and SN samples CQN normalized together"
+    , sep = "")) +
   ylab("Mean Expression (normalized FPKM)") +
   xlab("Treatment") +
   theme_grey(base_size = 14) +
   theme(axis.text = element_text(color = "black")) +
   ggsave(file = paste(
     "../analysis/Allen hESC A9 ratio expr readDF", readDepthFilt
-    , " ModSize", minModSize, ".pdf", sep=""))  #  "-", Sys.Date(),
+    , " ModSize", minModSize, "CQN together.pdf", sep=""))  #  "-", Sys.Date(),
 print("#######################################################################")
 
 # Mean expression
@@ -289,16 +295,17 @@ for (modToUse in modsToUse) {
     geom_boxplot(aes(fill = treatment)) +
     geom_text(data = formattedPvalggplotDF, aes(1.5, 8, label = label), type = "NA*") +
     scale_fill_discrete(name = "Biological\nReplicate",
-                        labels = c("Tx_2_(high MEF2C)", "Tx_7_(low MEF2C)")) +
+                        labels = c("(2) High MEF2C", "(7) Low MEF2C")) +
     labs(title = paste(
       "allen-A9-marker-expr-in-hESC-A9.R\nAllen derived A9 marker expression in"
-      , "Lipton A9\nmodule: ", modToUse, sep = "")) +
+      , "Lipton A9\nmodule: ", modToUse
+      , "\nA9 and SN samples CQN normalized together", sep = "")) +
     ylab("Mean Expression (normalized FPKM)") +
     xlab("Treatment") +
     theme_bw(base_size = 18) +
     ggsave(file = paste(
       "../analysis/Allen A9 marker expr in hESC A9 minModSize30 mod-"
-      , modToUse, "-", Sys.Date(), ".pdf", sep = ""))
+      , modToUse, "-", Sys.Date(), "CQN together.pdf", sep = ""))
   )
 }
 print("#######################################################################")
@@ -375,37 +382,39 @@ markerMEinA9$module <- factor(markerMEinA9$module
 ggplot(data = markerMEinA9, aes(x = module, y = MEexpression)) +
   geom_boxplot(aes(fill=as.factor(biorep))) +
   scale_fill_discrete(name= "Biological\nReplicate",
-                      labels= c("2_HighMEF2C", "7_LowMEF2C")) +
+                      labels= c("(2) High MEF2C", "(7) Low MEF2C")) +
   ylab("ME Expression (arbitrary value)") +
   xlab("Module") +
   labs(title = paste(
     "allen-A9-marker-expr-in-hESC-A9.R\nAllen marker ME expression in"
-    , "Lipton A9\nread depth filter: ", readDepthFilt)
-    , sep = "") +
+    , "Lipton A9\nread depth filter: ", readDepthFilt
+    , "\nA9 and SN samples CQN normalized together"
+    , sep = "")) +
   theme_grey(base_size = 20) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   theme(axis.text = element_text(color = "black"))
 ggsave(file = paste(
   "../analysis/Allen marker ME expr in A9 readDF", readDepthFilt
-  , " ModSize", minModSize, ".pdf", sep=""))
+  , " ModSize", minModSize, " CQN together.pdf", sep=""))
 
 # Boxplot all modules
 ggplot(data = allenMEinA9, aes(x = module, y = MEexpression)) +
   geom_boxplot(aes(fill=as.factor(biorep))) +
   scale_fill_discrete(name= "Biological\nReplicate",
-                      labels= c("2_HighMEF2C", "7_LowMEF2C")) +
+                      labels= c("(2) High MEF2C", "(7) Low MEF2C")) +
   ylab("ME Expression (arbitrary value)") +
   xlab("Module") +
   labs(title = paste(
     "allen-A9-marker-expr-in-hESC-A9.R\nAllen ME expression in"
-    , "Lipton A9\nread depth filter: ", readDepthFilt)
-    , sep = "") +
+    , "Lipton A9\nread depth filter: ", readDepthFilt
+    , "\nA9 and SN samples CQN normalized together"
+    , sep = "")) +
   theme_grey(base_size = 20) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   theme(axis.text = element_text(color = "black"))
 ggsave(file = paste(
   "../analysis/Allen ME expr in A9 readDF", readDepthFilt
-  , " ModSize", minModSize, ".pdf", sep=""))
+  , " ModSize", minModSize, " CQN together.pdf", sep=""))
 
 # Boxplot all modules - not separated by treatment group
 ggplot(data = allenMEinA9, aes(x = module, y = MEexpression)) +
@@ -416,11 +425,12 @@ ggplot(data = allenMEinA9, aes(x = module, y = MEexpression)) +
     "allen-A9-marker-expr-in-hESC-A9.R"
     , "\nAllen marker ME expression in Lipton A9"
     , "\nNot separated by treatment group"
-    , "\nread depth filter: ", readDepthFilt)
-    , sep = "") +
+    , "\nA9 and SN samples CQN normalized together"
+    , "\nread depth filter: ", readDepthFilt
+    , sep = "")) +
   theme_grey(base_size = 20) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   theme(axis.text = element_text(color = "black"))
 ggsave(file = paste(
   "../analysis/Allen marker ME expr in A9 combined Tx readDF", readDepthFilt
-  , " ModSize", minModSize, ".pdf", sep=""))
+  , " ModSize", minModSize, " CQN together.pdf", sep=""))
