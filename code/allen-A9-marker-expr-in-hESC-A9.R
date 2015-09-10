@@ -24,6 +24,9 @@ load("../Vivek_WGCNA_Lipton_A9_SN/HTSeqUnion_Exon_CQN_OutlierRemoved_A9cells_5.r
 load("../Vivek_WGCNA_Lipton_A9_SN/HTSeqUnion_Exon_CQN_OutlierRemoved_A9_SN_RDF5_regSN.rda")
 datExpr.HTSC.A9 <- datExpr.HTSC.A9SN[ ,1:6]
 datExpr.HTSC.SN <- datExpr.HTSC.A9SN[ ,7:16]
+load("../processed_data/HTSeqUnion_Exon_CQN_OutlierRemoved_A9_SN_RDF5_regRIN260280.rda")
+datExpr.HTSC.A9 <- as.data.frame(exprDataRegM[ ,1:6])
+
 
 # variable for read depth filter to record in output graph titles
 readDepthFilt <- "5"
@@ -249,6 +252,7 @@ ratioExprDF$module <- factor(ratioExprDF$module
                             , levels = as.character(unique(ratioExprDF$module)))
 ggplot(data = ratioExprDF, aes(x=module, y=ratio.expr)) + 
   geom_boxplot() +
+  geom_hline(aes(yintercept = 1)) +
   # geom_boxplot(aes(fill=module)) +
   coord_cartesian(ylim = c(0, 2)) +
   labs(title = paste(
@@ -258,11 +262,11 @@ ggplot(data = ratioExprDF, aes(x=module, y=ratio.expr)) +
     , sep = "")) +
   ylab("Mean Expression (normalized FPKM)") +
   xlab("Treatment") +
-  theme_grey(base_size = 14) +
+  theme_grey(base_size = 18) +
   theme(axis.text = element_text(color = "black")) +
   ggsave(file = paste(
     "../analysis/Allen hESC A9 ratio expr readDF", readDepthFilt
-    , " ModSize", minModSize, "CQN together.pdf", sep=""))  #  "-", Sys.Date(),
+    , " ModSize", minModSize, "CQN together RegRIN260280.pdf", sep=""))  #  "-", Sys.Date(),
 print("#######################################################################")
 
 # Mean expression
