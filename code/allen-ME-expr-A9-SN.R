@@ -28,6 +28,9 @@ load("../Vivek_WGCNA_Lipton_A9_SN/HTSeqUnion_Exon_CQN_OutlierRemoved_A9cells_5.r
 load("../Vivek_WGCNA_Lipton_A9_SN/HTSeqUnion_Exon_CQN_OutlierRemoved_A9_SN_RDF5_regSN.rda")
 datExpr.HTSC.A9 <- datExpr.HTSC.A9SN[ ,1:6]
 datExpr.HTSC.SN <- datExpr.HTSC.A9SN[ ,7:16]
+load("HTSeqUnion_Exon_CQN_OutlierRemoved_A9_SN_RDF5_CQNtogether_reg.rda")
+datExpr.HTSC.A9 <- normExpr.reg[ ,1:6]
+datExpr.HTSC.SN <- normExpr.reg[ ,7:16]
 
 # variable for read depth filter to record in output graph titles
 readDepthFilt <- "5"
@@ -118,7 +121,7 @@ ggplot(data = markerMEinA9, aes(x = module, y = MEexpression)) +
   theme(axis.text = element_text(color = "black"))
 ggsave(file = paste(
   "../analysis/Allen marker ME expr in A9 SN readDF", readDepthFilt
-  , " ModSize", minModSize, "CQN together.pdf", sep=""))
+  , " ModSize", minModSize, " CQN together.pdf", sep=""))
 
 # Boxplot all modules
 ggplot(data = allenMEa9sNdF, aes(x = module, y = MEexpression)) +
@@ -139,8 +142,8 @@ ggplot(data = allenMEa9sNdF, aes(x = module, y = MEexpression)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   theme(axis.text = element_text(color = "black"))
 ggsave(file = paste(
-  "../analysis/Allen ME expr in A9 readDF", readDepthFilt
-  , " ModSize", minModSize, "CQN together.pdf", sep=""))
+  "../analysis/Allen ME expr in A9 SN readDF", readDepthFilt
+  , " ModSize", minModSize, " CQN together.pdf", sep=""))
 
 # Boxplot all modules - not separated by treatment group
 ggplot(data = allenMEa9sNdF, aes(x = module, y = MEexpression)) +
@@ -158,11 +161,45 @@ ggplot(data = allenMEa9sNdF, aes(x = module, y = MEexpression)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   theme(axis.text = element_text(color = "black"))
 ggsave(file = paste(
-  "../analysis/Allen marker ME expr in A9 combined Tx readDF", readDepthFilt
-  , " ModSize", minModSize, "CQN together.pdf", sep=""))
+  "../analysis/Allen marker ME expr in A9 SN combined Tx readDF", readDepthFilt
+  , " ModSize", minModSize, " CQN together.pdf", sep=""))
 
 # Developmental code to assign genes to random modules
-# modsA9sNdF$module <- sample(1:15, nrow(modsA9sNdF), replace=T)
+modsA9sNdF$module <- sample(1:15, nrow(modsA9sNdF), replace=T)
+
+allenMEa9sNdF <- moduleEigengenes(t(modsA9sNdF[ ,4:18])
+                                  , modsA9sNdF$module)$eigengenes
+allenMEa9sNdF$biorep <- c(rep(2, 3), rep(7, 3), rep("human", 9))
+allenMEa9sNdF <- melt(allenMEa9sNdF, id.vars = "biorep")
+colnames(allenMEa9sNdF) <- c("biorep", "module", "MEexpression")
+
+MEtoUse <- sapply(modsToUse, function(mod) paste("ME", mod, sep=""))
+markerMEinA9 <- allenMEa9sNdF[allenMEa9sNdF$module %in% MEtoUse, ]
+
+markerMEinA9$module <- factor(markerMEinA9$module
+                              , levels = as.character(unique(MEtoUse)))
+
+# Boxplot all modules - genes randomly assigned to each module
+ggplot(data = allenMEa9sNdF, aes(x = module, y = MEexpression)) +
+  geom_boxplot(aes(fill=as.factor(biorep))) +
+  scale_fill_discrete(name= "Biological\nReplicate",
+                      labels= c(      "(2) High MEF2C"
+                                      , "(7) Low MEF2C"
+                                      , "Human Subsantia Nigra")) +
+  ylab("ME Expression (arbitrary value)") +
+  xlab("Module") +
+  labs(title = paste(
+    "allen-ME-expr-A9-SN.R"
+    , "\nGenes randomly assigned to modules"
+    , "\nA9 and SN samples CQN normalized together"
+    , "\nread depth filter: ", readDepthFilt)
+    , sep = "") +
+  theme_grey(base_size = 20) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  theme(axis.text = element_text(color = "black"))
+ggsave(file = paste(
+  "../analysis/Allen random ME expr in A9 SN readDF", readDepthFilt
+  , " ModSize", minModSize, " CQN together.pdf", sep=""))
 print("#######################################################################")
 
 
