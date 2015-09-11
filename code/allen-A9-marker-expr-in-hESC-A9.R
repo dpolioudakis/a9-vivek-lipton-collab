@@ -24,9 +24,12 @@ load("../Vivek_WGCNA_Lipton_A9_SN/HTSeqUnion_Exon_CQN_OutlierRemoved_A9cells_5.r
 load("../Vivek_WGCNA_Lipton_A9_SN/HTSeqUnion_Exon_CQN_OutlierRemoved_A9_SN_RDF5_regSN.rda")
 datExpr.HTSC.A9 <- datExpr.HTSC.A9SN[ ,1:6]
 datExpr.HTSC.SN <- datExpr.HTSC.A9SN[ ,7:16]
+# CQN normalized together, RIN and 260/280 ratio regressed out
 load("../processed_data/HTSeqUnion_Exon_CQN_OutlierRemoved_A9_SN_RDF5_regRIN260280.rda")
 datExpr.HTSC.A9 <- as.data.frame(exprDataRegM[ ,1:6])
-
+# CQN normalized together, age, sex, PMI, RIN and 260/280 ratio regressed out
+load("../processed_data/HTSeqUnion_Exon_CQN_OutlierRemoved_A9_SN_RDF5_regAgeSexPMiRIn260280.rda")
+datExpr.HTSC.A9 <- as.data.frame(exprDataRegM[ ,1:6])
 
 # variable for read depth filter to record in output graph titles
 readDepthFilt <- "5"
@@ -438,3 +441,28 @@ ggplot(data = allenMEinA9, aes(x = module, y = MEexpression)) +
 ggsave(file = paste(
   "../analysis/Allen marker ME expr in A9 combined Tx readDF", readDepthFilt
   , " ModSize", minModSize, " CQN together.pdf", sep=""))
+
+# Boxplot - Assign genes randomly to modules
+modulesA9 <- merge(ensemblColorsDF, exprA9DF
+                   , by.x = "ensembl_gene_id", by.y = "row.names" )
+modulesA9$module <- sample(1:15, nrow(modulesA9), replace=T)
+
+allenMEinA9 <- moduleEigengenes(t(modulesA9[ ,4:9]), modulesA9$module)$eigengenes
+allenMEinA9$biorep <- c(rep(2, 3), rep(7, 3))
+allenMEinA9 <- melt(allenMEinA9, id.vars = "biorep")
+colnames(allenMEinA9) <- c("biorep", "module", "MEexpression")
+
+ggplot(data = allenMEinA9, aes(x = module, y = MEexpression)) +
+  geom_boxplot(aes(fill=as.factor(biorep))) +
+  scale_fill_discrete(name= "Biological\nReplicate",
+                      labels= c("(2) High MEF2C", "(7) Low MEF2C")) +
+  ylab("ME Expression (arbitrary value)") +
+  xlab("Module") +
+  labs(title = paste(
+    "allen-A9-marker-expr-in-hESC-A9.R\nAllen ME expression in"
+    , "Lipton A9\nread depth filter: ", readDepthFilt
+    , "\nA9 and SN samples CQN normalized together"
+    , sep = "")) +
+  theme_grey(base_size = 20) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  theme(axis.text = element_text(color = "black"))
