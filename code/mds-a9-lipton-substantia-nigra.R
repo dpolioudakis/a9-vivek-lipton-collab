@@ -23,6 +23,11 @@ load("../Vivek_WGCNA_Lipton_A9_SN/HTSeqUnion_Exon_CQN_OutlierRemoved_A9cells_0.r
 load("../Vivek_WGCNA_Lipton_A9_SN/HTSeqUnion_Exon_CQN_OutlierRemoved_humanSN.rda")
 load("../Vivek_WGCNA_Lipton_A9_SN/HTSeqUnion_Exon_CQN_OutlierRemoved_humanSN_5.rda")
 load("../Vivek_WGCNA_Lipton_A9_SN/HTSeqUnion_Exon_CQN_OutlierRemoved_humanSN_0.rda")
+# A9 and SN samples CQN normalized together
+load("../Vivek_WGCNA_Lipton_A9_SN/HTSeqUnion_Exon_CQN_OutlierRemoved_A9_SN_RDF5_regSN.rda")
+# A9 and SN samples CQN normalized together, RIN and 260/280 regressed out
+load("../processed_data/HTSeqUnion_Exon_CQN_OutlierRemoved_A9_SN_RDF5_regRIN260280.rda")
+exprA9sNdF <- as.data.frame(exprDataRegM)
 
 # variable for read depth filter to record in output graph titles
 readDepthFilt <- "5"
@@ -33,10 +38,15 @@ modNetworkToUse <- 11
 modsToUse <- c("plum1", "grey60", "brown", "red", "cyan", "yellowgreen"
                , "sienna3", "royalblue")
 
-# Data frame of A9 samples and human SN samples, each column is a sample
+# Data frame of A9 samples and human SN samples CQN normalized separately
+# , each column is a sample
 exprA9sNdF <- merge(datExpr.HTSC.A9, datExpr.HTSC.SN
                     , by.x = "row.names", by.y = "row.names")
 exprA9sNdF <- data.frame(exprA9sNdF[ ,-1], row.names = exprA9sNdF[ ,1])
+
+# Data frame of A9 samples and human SN samples CQN normalized together
+# , each column is a sample
+exprA9sNdF <- datExpr.HTSC.A9SN[ ,1:16]
 print("#######################################################################")
 
 # MDS of all genes for hESC A9 and human SN
@@ -54,7 +64,8 @@ calcMDS <- function (exprDF) {
 }
 
 mdsLDF <- calcMDS(exprA9sNdF)
-mdsLDF$distVals$type <- as.factor(c(rep("2",3), rep("7",3), rep("human",9)))
+mdsLDF$distVals$type <- as.factor(c(rep("2",3), rep("7",3)
+                                    , rep("human", nrow(mdsLDF$distVals) - 6)))
 
 ggplot(mdsLDF$distVals, aes(x = X1, y = X2)) +
   geom_point(aes(color = factor(type)), size = 4) +
@@ -67,13 +78,30 @@ ggplot(mdsLDF$distVals, aes(x = X1, y = X2)) +
   labs(title = paste(
     "mds-a9-human-substantia-nigra.R"
     , "\nMDS plot: hESC A9 and human substantia nigra"
-    , "\nread depth filter: ", readDepthFilt)
-    , sep = "") +
+    , "\nA9 and SN CQN normalized together"
+    , "\nread depth filter: ", readDepthFilt
+    , sep = "")) +
   theme_grey(base_size = 20) +
   theme(axis.text = element_text(color = "black"))
 ggsave(file = paste(
   "../analysis/MDS - hESC A9 and human substantia nigra readDF"
-  , readDepthFilt, ".pdf", sep=""))
+  , readDepthFilt, " CQN together RegRIN260280.pdf", sep=""), height = 9)
+
+# # In development: Compare MDS PC1 to Metadata
+# 
+# mdsMeta <- cbind(mdsLDF$distVals, rbind(targets.A9, targets.SN))
+# mdsMeta <- melt(mdsMeta, measure.vars = c("RIN.RQI", "Ratio_260.280"
+#                                           , "Total_Reads", "Percent.Aligned"
+#                                           , "Percent.Unaligned"))
+# mdsMeta <- mdsMeta[ ,c(1, 2, 9, 10, 11, 12, 13)]
+# cor(mdsMeta$X1, mdsMeta$RIN.RQI)
+# traitCor <- round(cor(mdsMeta, use = "pairwise.complete.obs"), 2)
+# round(corPvalueStudent(traitCor, nrow(mdsMeta)), 2)
+# traitCor^2
+# 
+# ggplot(mdsMeta, aes(x = X1, y = value)) +
+#   geom_point(aes(color = factor(type)), size = 4) +
+#   facet_wrap(~variable, nrow = 2, scales="free")
 print("#######################################################################")
 
 # Data frame of gene symbols and corresponding Allen module color
@@ -132,7 +160,8 @@ modsExprA9sNlDF <- modsExprA9sNlDF[sapply(modsExprA9sNlDF
 mdsLDF <- lapply(modsExprA9sNlDF, function(df) calcMDS(df[ ,c(-1,-2,-3)]))
 mdsLDF <- melt(mdsLDF, id.vars = c("X1", "X2", "pc1", "pc2"))
 # Add column with sample type information to MDS data frame
-mdsLDF$type <- rep(c(rep("2",3), rep("7",3), rep("human",9)))
+mdsLDF$type <- rep(c(rep("2",3), rep("7",3)
+                     , rep("human", ncol(exprA9sNdF) - 6)))
 # Add column to mdsLDF to facet in ggplot2 with desired facet titles
 titles <- apply(mdsLDF, 1, function(x) paste(  
             x[5]
@@ -152,13 +181,14 @@ ggplot(mdsLDF, aes(x = X1, y = X2)) +
   labs(title = paste(
     "mds-a9-human-substantia-nigra.R"
     , "\nMDS plot: hESC A9 and human substantia nigra subset by Allen modules"
-    , "\nread depth filter: ", readDepthFilt)
-    , sep = "") +
+    , "\nA9 and SN CQN normalized together"
+    , "\nread depth filter: ", readDepthFilt
+    , sep = "")) +
   theme_grey(base_size = 14) +
   theme(axis.text = element_blank(), axis.ticks = element_blank())
 ggsave(file = paste(
   "../analysis/MDS - Allen modules hESC A9 and human substantia nigra readDF"
-  , readDepthFilt, ".pdf", sep=""))
+  , readDepthFilt, " CQN together RegRIN260280.pdf", sep=""),  height = 10)
 
 # Subset MDS data down to marker modules
 mdsMarkerLDF <- mdsLDF[mdsLDF$L1 %in% modsToUse, ]
@@ -181,10 +211,101 @@ ggplot(mdsMarkerLDF, aes(x = X1, y = X2)) +
     "mds-a9-human-substantia-nigra.R"
     , "\nMDS plot: hESC A9 and human substantia"
     , "\nnigra subset by Allen marker modules"
-    , "\nread depth filter: ", readDepthFilt)
-    , sep = "") +
+    , "\nA9 and SN CQN normalized together"
+    , "\nread depth filter: ", readDepthFilt
+    , sep = "")) +
   theme_grey(base_size = 15) +
   theme(axis.text = element_blank(), axis.ticks = element_blank())
 ggsave(file = paste(
   "../analysis/MDS - Allen marker modules hESC A9 and human substantia nigra readDF"
-  , readDepthFilt, ".pdf", sep=""))
+  , readDepthFilt, " CQN together RegRIN260280.pdf", sep=""))
+print("#######################################################################")
+
+# MDS plots of Allen modules in hESC A9
+# (human substantia nigra samples not included)
+
+# Data frame of gene symbols and corresponding Allen module color
+genesColorsDF <- data.frame(colnames(exprData)
+                            , bwModulesLL[[modNetworkToUse]]$colors)
+colnames(genesColorsDF) <- c("gene", "module")
+
+AddEnsembl <- function (geneList) {
+  geneListDF <- data.frame(geneList)
+  # bioMart manual:
+  # http://bioconductor.org/packages/release/bioc/vignettes/biomaRt/inst/doc/biomaRt.pdf
+  # Attribute: values to retrieve
+  # Filters: input query type
+  # Values: input query
+  ensembl <- useMart("ensembl")
+  ensembl <- useDataset("hsapiens_gene_ensembl",mart=ensembl)
+  # Data frame of module Ensembl IDs and gene symbols
+  moduleEnsemblDF <- getBM(  attributes = c("ensembl_gene_id", "hgnc_symbol")
+                             , filters = "hgnc_symbol"
+                             , values = geneListDF
+                             , mart = ensembl)
+  moduleEnsemblDF
+}
+
+# Add Ensembl gene ID to gene symbol and module color data frame
+genesEnsemblDF <- AddEnsembl(colnames(exprData))
+ensemblColorsDF <- merge(genesEnsemblDF, genesColorsDF
+                         , by.x = "hgnc_symbol", by.y = "gene")
+
+# Merge with Lipton expression values
+modsExprA9sNdF <- merge(ensemblColorsDF, exprA9sNdF
+                        , by.x = "ensembl_gene_id", by.y = "row.names")
+# Subset to hESC A9 samples (remove human substantia nigra samples)
+modsExprA9sNdF <- modsExprA9sNdF[ ,1:9]
+
+# Function to output data frame of MDS PCs values and PCs
+calcMDS <- function (exprDF) {
+  # dist calculates the distances between the rows of a data matrix
+  # Transpose data frame so samples are rows and genes are columns
+  mds = cmdscale(dist(t(exprDF)), eig = T)
+  pc1 = mds$eig[1]^2 / sum(mds$eig^2)
+  pc2 = mds$eig[2]^2 / sum(mds$eig^2)
+  mdsAndTreatmentLDF <- data.frame(mds$points
+                                   , pc1 = pc1, pc2 = pc2)
+  mdsAndTreatmentLDF
+}
+
+# Split by module
+modsExprA9sNlDF <- split(modsExprA9sNdF, modsExprA9sNdF$module)
+# Find any modules that have no genes left after merging with Lipton
+sort(sapply(modsExprA9sNlDF, function(df) nrow(df) != "0"))
+# Remove any modules that have no genes left after merging with Lipton
+modsExprA9sNlDF <- modsExprA9sNlDF[sapply(modsExprA9sNlDF
+                                          , function(df) nrow(df) != "0")]
+
+# Call function to output data frame of MDS PCs values and PCs on each module
+# group of genes
+mdsLDF <- lapply(modsExprA9sNlDF, function(df) calcMDS(df[ ,c(-1,-2,-3)]))
+mdsLDF <- melt(mdsLDF, id.vars = c("X1", "X2", "pc1", "pc2"))
+# Add column with sample type information to MDS data frame
+mdsLDF$type <- rep(c(rep("2",3), rep("7",3)))
+# Add column to mdsLDF to facet in ggplot2 with desired facet titles
+titles <- apply(mdsLDF, 1, function(x) paste(  
+  x[5]
+  , "\nPC1: ", signif(100*as.numeric(x[3]), 3), "%"
+  , "\nPC2: ", signif(100*as.numeric(x[4]), 3), "%", sep = ""))
+mdsLDF$title <- titles
+
+# MDS plots of Lipton data subset by each Allen module
+ggplot(mdsLDF, aes(x = X1, y = X2)) +
+  geom_point(aes(color = factor(type)), size = 1.5) +
+  facet_wrap(~title, ncol = 8, scales = "free") +
+  scale_color_discrete(name = "Sample Type"
+                       , labels = c("2_ High MEF2C", "7_ Low MEF2C")) +
+  xlab("PC1") +
+  ylab("PC2") +
+  labs(title = paste(
+    "mds-a9-human-substantia-nigra.R"
+    , "\nMDS plot: hESC A9 subset by Allen modules"
+    , "\nA9 and SN CQN normalized together"
+    , "\nread depth filter: ", readDepthFilt
+    , sep = "")) +
+  theme_grey(base_size = 14) +
+  theme(axis.text = element_blank(), axis.ticks = element_blank())
+ggsave(file = paste(
+  "../analysis/MDS - Allen modules hESC A9 readDF"
+  , readDepthFilt, " CQN together RegRIN260280.pdf", sep=""), height = 10)
