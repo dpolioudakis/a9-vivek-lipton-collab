@@ -28,6 +28,10 @@ load("../Vivek_WGCNA_Lipton_A9_SN/HTSeqUnion_Exon_CQN_OutlierRemoved_A9_SN_RDF5_
 # A9 and SN samples CQN normalized together, RIN and 260/280 regressed out
 load("../processed_data/HTSeqUnion_Exon_CQN_OutlierRemoved_A9_SN_RDF5_regRIN260280.rda")
 exprA9sNdF <- as.data.frame(exprDataRegM)
+# A9 and SN samples CQN normalized together, genes filtered by expression
+# correlation to RIN and 260/280
+load("../processed_data/HTSeqUnion_Exon_CQN_OutlierRemoved_A9_SN_RDF5_FDrRIn260280.rda")
+exprA9sNdF <- as.data.frame(exprFDRfiltM)
 
 # variable for read depth filter to record in output graph titles
 readDepthFilt <- "5"
@@ -85,7 +89,7 @@ ggplot(mdsLDF$distVals, aes(x = X1, y = X2)) +
   theme(axis.text = element_text(color = "black"))
 ggsave(file = paste(
   "../analysis/MDS - hESC A9 and human substantia nigra readDF"
-  , readDepthFilt, " CQN together RegRIN260280.pdf", sep=""), height = 9)
+  , readDepthFilt, " CQN together FDrRIn260280.pdf", sep=""), height = 9)
 
 # # In development: Compare MDS PC1 to Metadata
 # 
@@ -188,7 +192,7 @@ ggplot(mdsLDF, aes(x = X1, y = X2)) +
   theme(axis.text = element_blank(), axis.ticks = element_blank())
 ggsave(file = paste(
   "../analysis/MDS - Allen modules hESC A9 and human substantia nigra readDF"
-  , readDepthFilt, " CQN together RegRIN260280.pdf", sep=""),  height = 10)
+  , readDepthFilt, " CQN together FDrRIn260280.pdf", sep=""),  height = 10)
 
 # Subset MDS data down to marker modules
 mdsMarkerLDF <- mdsLDF[mdsLDF$L1 %in% modsToUse, ]
@@ -218,7 +222,7 @@ ggplot(mdsMarkerLDF, aes(x = X1, y = X2)) +
   theme(axis.text = element_blank(), axis.ticks = element_blank())
 ggsave(file = paste(
   "../analysis/MDS - Allen marker modules hESC A9 and human substantia nigra readDF"
-  , readDepthFilt, " CQN together RegRIN260280.pdf", sep=""))
+  , readDepthFilt, " CQN together FDrRIn260280.pdf", sep=""))
 print("#######################################################################")
 
 # MDS plots of Allen modules in hESC A9
@@ -308,4 +312,4 @@ ggplot(mdsLDF, aes(x = X1, y = X2)) +
   theme(axis.text = element_blank(), axis.ticks = element_blank())
 ggsave(file = paste(
   "../analysis/MDS - Allen modules hESC A9 readDF"
-  , readDepthFilt, " CQN together RegRIN260280.pdf", sep=""), height = 10)
+  , readDepthFilt, " CQN together FDrRIn260280.pdf", sep=""), height = 10)
