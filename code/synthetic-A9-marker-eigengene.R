@@ -16,6 +16,7 @@ disableWGCNAThreads()
 
 # Vivek normalized RNAseq FPKMs
 load("../Vivek_WGCNA_Lipton_A9_SN/HTSeqUnion_Exon_CQN_OutlierRemoved_A9_SN_RDF5_regSN.rda")
+load("HTSeqUnion_Exon_CQN_OutlierRemoved_A9_SN_RDF5_CQNtogether_reg.rda")
 
 readDepthFilt <- "5"
 
@@ -33,6 +34,7 @@ markerGenes <- c("ALDH1A1", "TH", "SLC18A2", "KCNJ6")
 
 # Data frame of A9 samples and human SN samples, each column is a sample
 exprA9sNdF <- as.data.frame(datExpr.HTSC.A9SN)
+exprA9sNdF <- as.data.frame(normExpr.reg)
 
 AddEnsembl <- function (geneList) {
   moduleGenes <- data.frame(geneList)
