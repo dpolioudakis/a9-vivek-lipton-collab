@@ -8,10 +8,13 @@ library(ggplot2)
 load("../Vivek_WGCNA_Lipton_A9_SN/Vivek_SN_mod_colors.rda")
 load("../processed_data/allen_BW_modules.rda")
 load("../Vivek_WGCNA_Lipton_A9_SN/HTSeqUnion_Exon_CQN_OutlierRemoved_humanSN.rda")
+load("../Vivek_WGCNA_Lipton_A9_SN/HTSeqUnion_Exon_CQN_OutlierRemoved_humanSN_5.rda")
+
 
 # Variable for minModSize parameter used in blockwiseModules WGCNA function
 # to record in output graph titles
 minModSize <- "30"
+readDepthFilt <- "5"
 # bwModulesLL is list of modules from different blockwiseModules parameters used
 # 11 corresponds to softPower 7, minModSize 30, deepSplit 2,
 # MEmergeCutHeight 0.25, maxBlockSize 12000
@@ -74,7 +77,7 @@ ggplot(ratiosExprDF, aes(x = modules, y = ratios)) +
           "allen-module-expr-in-human-SN.R"
           ,"\nA9 marker module ratio of expression in Lipton human substantia"
           ,"\nnigra versus all genes profiled in human substantia nigra"
-          ,"\n minModSize", minModSize
+          ,"\n minModSize", minModSize, " read depth filter:", readDepthFilt
           , sep = "")) +
      theme_grey(base_size = 21) +
      theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
@@ -83,7 +86,7 @@ ggplot(ratiosExprDF, aes(x = modules, y = ratios)) +
      theme(axis.text = element_text(color = "black"))
      ggsave(file = paste(
          "../analysis/Allen module expression in human substantia nigra"
-       , "minModSize", minModSize, ".pdf", sep=""))
+       , " minModSize", minModSize, " readDepth", readDepthFilt, ".pdf", sep=""))
 print("#######################################################################")
 
 # Calculate ratio of expression of each gene in module versus mean expression
