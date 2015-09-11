@@ -16,7 +16,15 @@ disableWGCNAThreads()
 
 # Vivek normalized RNAseq FPKMs
 load("../Vivek_WGCNA_Lipton_A9_SN/HTSeqUnion_Exon_CQN_OutlierRemoved_A9_SN_RDF5_regSN.rda")
-load("HTSeqUnion_Exon_CQN_OutlierRemoved_A9_SN_RDF5_CQNtogether_reg.rda")
+load("../processed_data/HTSeqUnion_Exon_CQN_OutlierRemoved_A9_SN_RDF5_regRIN260280.rda")
+exprDataA9sNdF <- as.data.frame(exprDataRegM)
+load("HTSeqUnion_Exon_CQN_OutlierRemoved_A9_SN_RDF5_CQNtogether_regRIN.rda")
+# Data frame of A9 samples and human SN samples, each column is a sample
+exprDataA9sNdF <- as.data.frame(normExpr.reg)
+load("../processed_data/HTSeqUnion_Exon_CQN_OutlierRemoved_A9_SN_RDF5_regAgeSexPMiRIn260280.rda")
+exprDataA9sNdF <- as.data.frame(exprDataRegM)
+load("../processed_data/HTSeqUnion_Exon_CQN_OutlierRemoved_A9_SN_RDF5_FDrRIn260280.rda")
+exprDataA9sNdF <- as.data.frame(exprFDRfiltM)
 
 readDepthFilt <- "5"
 
@@ -31,10 +39,7 @@ print("#######################################################################")
 # Damon's A9 markers
 
 markerGenes <- c("ALDH1A1", "TH", "SLC18A2", "KCNJ6")
-
-# Data frame of A9 samples and human SN samples, each column is a sample
-exprA9sNdF <- as.data.frame(datExpr.HTSC.A9SN)
-exprA9sNdF <- as.data.frame(normExpr.reg)
+exprA9sNdF <- exprDataA9sNdF
 
 AddEnsembl <- function (geneList) {
   moduleGenes <- data.frame(geneList)
@@ -71,9 +76,6 @@ markerMEa9sNdF$biorep <- c( rep(2, 3)
 markerMEa9sNdF <- melt(markerMEa9sNdF, id.vars = "biorep")
 colnames(markerMEa9sNdF) <- c("biorep", "module", "MEexpression")
 
-markerMEinA9$module <- factor(markerMEinA9$module
-                              , levels = as.character(unique(MEtoUse)))
-
 # Boxplot of marker modules
 
 ggplot(data = markerMEa9sNdF, aes(x = module, y = MEexpression)) +
@@ -96,7 +98,7 @@ ggplot(data = markerMEa9sNdF, aes(x = module, y = MEexpression)) +
   theme(axis.text = element_text(color = "black"))
 ggsave(file = paste(
   "../analysis/Synthetic Damon's A9 marker ME expression readDF", readDepthFilt
-  , ".pdf", sep=""), width = 14, height = 6)
+  , " regRINratio260280.pdf", sep=""), width = 14, height = 6)
 
 # Code to check module eigengene expression without splitting by sample type
 ggplot(data = markerMEa9sNdF, aes(x = module, y = MEexpression)) +
@@ -108,8 +110,7 @@ print("################################")
 
 markerGenes <- c("ALDH1A1", "TH", "SLC18A2", "CACNA1D"
                  , "KCNJ6", "LMX1A", "FOXA2", "NR4A2", "ALDH1A1")
-
-exprA9sNdF <- as.data.frame(datExpr.HTSC.A9SN)
+exprA9sNdF <- exprDataA9sNdF
 
 # DF of Ensembl ID and Gene symbol
 genesEnsemblDF <- AddEnsembl(markerGenes)
@@ -128,9 +129,6 @@ markerMEa9sNdF$biorep <- c( rep(2, 3)
                             , rep("human", 10))
 markerMEa9sNdF <- melt(markerMEa9sNdF, id.vars = "biorep")
 colnames(markerMEa9sNdF) <- c("biorep", "module", "MEexpression")
-
-markerMEinA9$module <- factor(markerMEinA9$module
-                              , levels = as.character(unique(MEtoUse)))
 
 # Boxplot of marker modules
 
@@ -154,7 +152,7 @@ ggplot(data = markerMEa9sNdF, aes(x = module, y = MEexpression)) +
   theme(axis.text = element_text(color = "black"))
 ggsave(file = paste(
   "../analysis/Synthetic Lipton's A9 marker ME expression readDF", readDepthFilt
-  , ".pdf", sep=""), width = 14, height = 6)
+  , " regRINratio260280.pdf", sep=""), width = 14, height = 6)
 print("################################")
 
 # Boxplot of synthetic eigengene expressions in Lipton's hESC A9 cultures
@@ -162,7 +160,7 @@ print("################################")
 
 markerGenes <- c("CALB1", "CALB2")
 
-exprA9sNdF <- as.data.frame(datExpr.HTSC.A9SN)
+exprA9sNdF <- exprDataA9sNdF
 
 # DF of Ensembl ID and Gene symbol
 genesEnsemblDF <- AddEnsembl(markerGenes)
@@ -181,9 +179,6 @@ markerMEa9sNdF$biorep <- c( rep(2, 3)
                             , rep("human", 10))
 markerMEa9sNdF <- melt(markerMEa9sNdF, id.vars = "biorep")
 colnames(markerMEa9sNdF) <- c("biorep", "module", "MEexpression")
-
-markerMEinA9$module <- factor(markerMEinA9$module
-                              , levels = as.character(unique(MEtoUse)))
 
 # Boxplot of marker modules
 
@@ -207,7 +202,7 @@ ggplot(data = markerMEa9sNdF, aes(x = module, y = MEexpression)) +
   theme(axis.text = element_text(color = "black"))
 ggsave(file = paste(
   "../analysis/Synthetic Lipton's A9 anti-marker ME expression readDF", readDepthFilt
-  , ".pdf", sep=""), width = 14, height = 6)
+  , " regRINratio260280.pdf.pdf", sep=""), width = 14, height = 6)
 
 print("#######################################################################")
 
