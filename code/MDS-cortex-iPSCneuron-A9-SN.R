@@ -21,10 +21,11 @@ library(biomaRt)
 # Load CQN normalized expression values for hESC A9 and human substantia nigra
 # samples
 load("../processed_data/HTSeqUnion_Gene_CQN_OutlierRemoved_cortex_iPSCneuron_humanSN_RDF5.rda")
+load("../processed_data/HTSeqUnion_Gene_CQN_OutlierRemoved_A9_SN_cortex_iPSCneuron_RDF5_regRINtotalReads.rda")
 exprDat <- as.data.frame(cqnDat)
 
 # Output file paths and variables
-outInfo <- " cortex iPSCneuron humanSN A9 readDF5 CQN"
+outInfo <- " cortex iPSCneuron humanSN A9 readDF5 CQN regRINtotalReads"
 outpathAllGenes <- paste(
   "../analysis/MDS all genes"
   , outInfo, ".pdf", sep="")
@@ -37,7 +38,12 @@ outpathCAC <- paste(
 
 # Other variables
 graphSubTitle <- paste("\nread depth filter: 5"
+                     , "\nregressed out RIN and total Reads"
                      , "\nMDS-cortex-iPSCneuron-A9-SN.R", sep = "")
+type <- as.factor(c(rep("cortex", 9), rep("2", 3)
+                    , rep("human substantia nigra", 5), rep("7",3)
+                    , rep("human substantia nigra", 4)
+                    , rep("iPSC neuron", 8)))
 # Data frame of Ensembl IDs, gene symbols, and status as marker or anti-marker
 markersDF <- data.frame(
   ensembl = c(
@@ -84,16 +90,15 @@ calcMDS <- function (exprDF) {
 # Calculate MDS
 mdsDF <- calcMDS(exprDat)
 # Add column with sample type info
-mdsDF$type <- as.factor(c(rep("cortex", 9), rep("2", 3)
-                          , rep("human substantia nigra", 5), rep("7",3)
-                          , rep("human substantia nigra", 5)))
+mdsDF$type <- type
 
 ggplot(mdsDF, aes(x = X1, y = X2)) +
   geom_point(aes(color = factor(type)), size = 4) +
   geom_text(aes(label = row.names(mdsDF)), vjust = -1) +
   scale_color_discrete(name = "Sample Type"
                        , labels = c("(2) High MEF2C", "(7) Low MEF2C"
-                                    , "Human Cortex", "Human Substantia Nigra")) +
+                                    , "Human Cortex", "Human Substantia Nigra"
+                                    , "iPSC neuron")) +
   xlab(paste("PC1 (", signif(100*mdsDF$pc1, 3), "%)", sep = "")) +
   ylab(paste("PC2 (", signif(100*mdsDF$pc2, 3), "%)", sep = "")) +
   labs(title = paste(
@@ -111,16 +116,15 @@ markExprDF <- merge(markersDF, exprDat, by.x = "ensembl", by.y = "row.names")
 # Calculate MDS
 mdsDF <- calcMDS(markExprDF[ ,4:ncol(markExprDF)])
 # Add column with sample type info
-mdsDF$type <- as.factor(c(rep("cortex", 9), rep("2", 3)
-                          , rep("human substantia nigra", 5), rep("7",3)
-                          , rep("human substantia nigra", 5)))
+mdsDF$type <- type
 
 ggplot(mdsDF, aes(x = X1, y = X2)) +
   geom_point(aes(color = factor(type)), size = 4) +
   geom_text(aes(label = row.names(mdsDF)), vjust = -1) +
   scale_color_discrete(name = "Sample Type"
                        , labels = c("(2) High MEF2C", "(7) Low MEF2C"
-                       , "Human Cortex", "Human Substantia Nigra")) +
+                       , "Human Cortex", "Human Substantia Nigra"
+                       , "iPSC neuron")) +
   xlab(paste("PC1 (", signif(100*mdsDF$pc1, 3), "%)", sep = "")) +
   ylab(paste("PC2 (", signif(100*mdsDF$pc2, 3), "%)", sep = "")) +
   labs(title = paste(
@@ -138,16 +142,15 @@ cACNA1Ddat <- markExprDF[markExprDF$gene == "CACNA1D", ]
 # Calculate MDS
 mdsDF <- calcMDS(cACNA1Ddat[ ,4:ncol(cACNA1Ddat)])
 # Add column with sample type info
-mdsDF$type <- as.factor(c(rep("cortex", 9), rep("2", 3)
-                          , rep("human substantia nigra", 5), rep("7",3)
-                          , rep("human substantia nigra", 5)))
+mdsDF$type <- type
 
 ggplot(mdsDF, aes(x = X1, y = X2)) +
   geom_point(aes(color = factor(type)), size = 4) +
   geom_text(aes(label = row.names(mdsDF)), vjust = -1) +
   scale_color_discrete(name = "Sample Type"
                        , labels = c("(2) High MEF2C", "(7) Low MEF2C"
-                                    , "Human Cortex", "Human Substantia Nigra")) +
+                                    , "Human Cortex", "Human Substantia Nigra"
+                                    , "iPSC neuron")) +
   xlab(paste("PC1 (", signif(100*mdsDF$pc1, 3), "%)", sep = "")) +
   ylab(paste("PC2 (", signif(100*mdsDF$pc2, 3), "%)", sep = "")) +
   labs(title = paste(
