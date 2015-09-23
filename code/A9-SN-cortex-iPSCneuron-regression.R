@@ -26,29 +26,32 @@ disableWGCNAThreads()
 # Parameters
 readDepthFilt <- 5
 graphSubTitle <- paste("\nVivek Cortex, Yuan's iPSC neuron, Lipton's A9 and SN"
-                       , "\nRIN and Total reads regressed out"
+                       , "\nCQN normalized: GC, gene length, quantile"
+                       , "\nRIN regressed out"
                        , "\nread depth filter: ", readDepthFilt
                        , "\nA9-SN-cortex-iPSCneuron-regression.R", sep = "")
+outPathInfo <- paste("A9-SN-cortex-iPSCneuron_RDF", readDepthFilt
+                     , "_CQN-geneLength-GC-quantile_OutlierRemoved"
+                     , "_regRIN", sep = "")
 
 # Load CQN normalized expression values for hESC A9 and human substantia nigra
 # samples
-load("../processed_data/HTSeqUnion_Gene_CQN_OutlierRemoved_cortex_IPSCneuron_humanSN_RDF5.rda")
+load("../processed_data/HTSeqUnion_Gene_Cortex-iPSCneuron-LiptonA9sN_RDF5_CQN-geneLength-GC-quantile_OutlierRemoved.rda")
 exprDatM <- cqnDat
 a9sNmetaDF <- a9sNmetaDF 
 cortexMetaDF <- cortexMetaDF
 neuronMetaDF <- neuronMetaDF
 
 # Output file paths
-outInfo <- paste("A9_SN_cortex_iPSCneuron_RDF", readDepthFilt, "_regRINalignedReads", sep = "")
 outPathCorr <- paste("../analysis/corr PCA confounders "
-                     , outInfo, ".pdf", sep = "")
-outPathReg <- paste("../processed_data/HTSeqUnion_Gene_CQN_OutlierRemoved_"
-                    , outInfo, ".rda", sep = "")
+                     , outPathInfo, ".pdf", sep = "")
+outPathReg <- paste("../processed_data/HTSeqUnion_Gene_"
+                    , outPathInfo, ".rda", sep = "")
 outPathExprBoxplot <- paste(
   "../analysis/Post confounders regression boxplot expression "
-  , outInfo, ".pdf", sep = "")
+  , outPathInfo, ".pdf", sep = "")
 outPathCorrReg <- paste("../analysis/corr PCA confounders regressed "
-                        , outInfo, ".pdf", sep = "")
+                        , outPathInfo, ".pdf", sep = "")
 ################################################################################
 
 # Subset to desired metadata and combine metadata
@@ -146,6 +149,15 @@ pairs(cbind(pairsDat, topPCs), col = cond, pch = 19
 dev.off()
 ################################################################################
 
+###For categorical data use this
+# age=as.numeric(targets[7:16, ]$Age)
+# sex <- as.numeric(factor(targets[7:16, ]$Sex))-1
+# pmi=as.numeric(targets[7:16, ]$PMI..Autolysis.time..hr..)
+# rin=as.numeric(targets[7:16, ]$RIN.RQI)
+# regVars <- as.data.frame(cbind(age,sex,pmi,rin))
+
+regVars <- data.frame(RIN = as.numeric(metaDatDF$RIN))
+
 # 1) lme using covariates on unnormalized data
 options(stringsAsFactors=FALSE)
 boot <- FALSE
@@ -158,17 +170,6 @@ bs <- function(formula, data, indices) {
 
 # 2) lmboot for 106 samples + additional sample set (mega analysis - adding covariates in the model)
 # Get the covariate data
-
-
-###For categorical data use this
-# age=as.numeric(targets[7:16, ]$Age)
-# sex <- as.numeric(factor(targets[7:16, ]$Sex))-1
-# pmi=as.numeric(targets[7:16, ]$PMI..Autolysis.time..hr..)
-# rin=as.numeric(targets[7:16, ]$RIN.RQI)
-# regVars <- as.data.frame(cbind(age,sex,pmi,rin))
-
-regVars <- data.frame(alignedReads = as.numeric(metaDatDF$Aligned_Reads)
-                      , RIN = as.numeric(metaDatDF$RIN))
 
 # Regress out confounding variables
 RegConf <- function (exprDatM) {
@@ -196,8 +197,8 @@ RegConf <- function (exprDatM) {
     }
   } else {
     for (i in 1:nrow(exprDatM)) {
-      if (i%%1000 == 0) {print(i)}
-      linMod <- lm(as.numeric(exprDatM[i, ]) ~ alignedReads + RIN, data = regVars)
+      if (i%%1000 == 0) {print(paste("Done for", i, "genes..."))}
+      linMod <- lm(as.numeric(exprDatM[i, ]) ~ ., data = regVars)
       # The full data - the undesired covariates
       exprDatRegM[i,] <- coef(linMod)[1] + linMod$residuals
       # lmmod1 <- lm(as.numeric(exprDatM[i, ]) ~ condition + age + sex + pmi, data = regVars)
@@ -207,7 +208,7 @@ RegConf <- function (exprDatM) {
       # The full data - the undesired covariates
       # exprDatRegM[i,] <- coef[1] + coef[2]*regVars[,"condition"] + lmmod1$residuals
       ## Also equivalent to <- thisexp - coef*var expression above
-      cat('Done for Genes',i,'\n')
+      # cat('Done for Genes',i,'\n')
     }
   }
   exprDatRegM
