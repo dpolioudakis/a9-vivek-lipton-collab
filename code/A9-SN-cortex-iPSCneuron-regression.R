@@ -16,6 +16,8 @@ sessionInfo()
 
 library(boot)
 library(WGCNA)
+library(ggplot2)
+library(reshape2)
 
 options(stringsAsFactors=FALSE)
 allowWGCNAThreads()
