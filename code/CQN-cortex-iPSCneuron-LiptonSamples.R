@@ -3,9 +3,12 @@
 # substantia nigra samples
 
 # Inputs:
-#   HTseq 
+#   HTseq
+#     Samples were aligned with Tophat, FPKMs calculated with HTseq
 
-# Samples were aligned with Tophat, FPKMs calculated with HTseq
+# Outputs:
+#   Histogram post CQN normalization of GC and gene length correlations
+#   Table of normalized gene expression
 
 # Load data
   # Subset Vivek cortex data to desired samples
@@ -24,6 +27,9 @@ readDepthFilt <- 5
 graphSubTitle <- paste("\nVivek Cortex, Yuan's iPSC neuron, Lipton's A9 and SN"
                        , "\nread depth filter: ", readDepthFilt
                        , "\nCQN-cortex-IPSCneuron-LiptonSamples.R", sep = "")
+outPathInfo <- paste("Cortex-iPSCneuron-LiptonA9sN_RDF", readDepthFilt
+                     , "_CQN-geneLength-GC-quantile_OutlierRemoved"
+                     , sep = "")
 
 # Load inputs
 # Vivek cortex
@@ -44,14 +50,12 @@ load("../Vivek_WGCNA_Lipton_A9_SN/GC18unionAnno.Rdata")
 gc18unionAnno <- gc18unionAnno
 
 # Output file paths and variables
-outInfo <- "VivekCortex YuaniPSCneuron LiptonA9sN"
 outpathCQNhist <- paste("../analysis/CQN QC histogram "
-  , outInfo, ".pdf", sep="")
-outpathExprBoxplot <- paste("../analysis/CQN boxplot expression post CQN "
-                            , outInfo, ".pdf", sep="")
-outpathData <- paste(
-  "../processed_data/HTSeqUnion_Gene_CQN_OutlierRemoved_cortex_iPSCneuron_humanSN_RDF"
-                     , readDepthFilt, ".rda", sep = "")
+  , outPathInfo, ".pdf", sep="")
+outpathExprBoxplot <- paste("../analysis/CQN-post boxplot expression "
+                            , outPathInfo, ".pdf", sep="")
+outpathData <- paste("../processed_data/HTSeqUnion_Gene_"
+                     , outPathInfo, ".rda", sep = "")
 ################################################################################
 
 # Prepare input data
@@ -117,7 +121,7 @@ RunCQN <- function (exprDatDF) {
   # Run CQN with specified depths and no quantile normalization
   cqnDat <- cqn(exprDatDF, lengths = as.numeric(geneAnno[,1])
                 , x = as.numeric(geneAnno[,2]), lengthMethod = c("smooth")
-                , sqn = FALSE)
+                , sqn = TRUE)
   # Get the log2(Normalized FPKM) values
   cqnDat <- cqnDat$y + cqnDat$offset
   cqnDat
