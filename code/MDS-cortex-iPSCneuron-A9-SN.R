@@ -18,17 +18,23 @@ library(ggplot2)
 library(biomaRt)
 
 # Parameters
-outpathInfo <- " cortex-iPSCneuron-humanSN-iPSCa9 readDF5 CQN-GC-geneLength-quantile regRIN"
-graphSubTitle <- paste("\nVivek Cortex, Yuan iPSC Neurons, Lipton iPSC A9 and human SN"
+# outpathInfo <- " cortex-iPSCneuron-humanSN-iPSCa9 readDF5 CQN-GC-geneLength-quantile regRIN"
+outpathInfo <- " cortex-humanSN-iPSCa9 readDF5 CQN-GC-geneLength-quantile regRIN"
+# graphSubTitle <- paste("\nVivek Cortex, Yuan iPSC Neurons, Lipton iPSC A9 and human SN"
+graphSubTitle <- paste("\nVivek Cortex, Lipton iPSC A9 and human SN"                       
                        , "\nread depth filter: 5"
                        , "\nCQN GC, gene length, quantile"
                        , "\nregressed out RIN"
                        , "\nMDS-cortex-iPSCneuron-A9-SN.R", sep = "")
 # For properly labeling samples after MDS calculation
+# type <- as.factor(c(rep("cortex", 9), rep("2", 3)
+#                     , rep("human substantia nigra", 5), rep("7",3)
+#                     , rep("human substantia nigra", 4)
+#                     , rep("iPSC neuron", 8)))
 type <- as.factor(c(rep("cortex", 9), rep("2", 3)
                     , rep("human substantia nigra", 5), rep("7",3)
-                    , rep("human substantia nigra", 4)
-                    , rep("iPSC neuron", 8)))
+                    , rep("human substantia nigra", 5)))
+
 
 # Input file paths (choose 1)
 # Load CQN normalized expression values for hESC A9 and human substantia nigra
@@ -37,6 +43,7 @@ load("../processed_data/HTSeqUnion_Gene_CQN_OutlierRemoved_cortex_iPSCneuron_hum
 load("../processed_data/HTSeqUnion_Gene_CQN_OutlierRemoved_A9_SN_cortex_iPSCneuron_RDF5_regRINtotalReads.rda")
 load("../processed_data/HTSeqUnion_Gene_CQN_OutlierRemoved_A9_SN_cortex_iPSCneuron_RDF5_regRINalignedReads.rda")
 load("../processed_data/HTSeqUnion_Gene_A9-SN-cortex-iPSCneuron_RDF5_CQN-geneLength-GC-quantile_OutlierRemoved_regRIN.rda")
+load("../processed_data/HTSeqUnion_Gene_A9-SN-cortex_RDF5_CQN-geneLength-GC-quantile_OutlierRemoved_regRIN.rda")
 exprDat <- as.data.frame(exprRegM)
 
 # Output file paths and variables
