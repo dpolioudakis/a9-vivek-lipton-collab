@@ -39,13 +39,13 @@ cortexMetaDF <- cortexMetaDF
 neuronMetaDF <- neuronMetaDF
 
 # Output file paths
-outInfo <- paste("A9_SN_cortex_iPSCneuron_RDF", readDepthFilt, sep = "")
+outInfo <- paste("A9_SN_cortex_iPSCneuron_RDF", readDepthFilt, "_regRINalignedReads", sep = "")
 outPathCorr <- paste("../analysis/corr PCA confounders "
                      , outInfo, ".pdf", sep = "")
 outPathReg <- paste("../processed_data/HTSeqUnion_Gene_CQN_OutlierRemoved_"
-                    , outInfo, "_regRINtotalReads.rda", sep = "")
+                    , outInfo, ".rda", sep = "")
 outPathExprBoxplot <- paste(
-  "../analysis/Post regression RIN totalReads boxplot expression "
+  "../analysis/Post confounders regression boxplot expression "
   , outInfo, ".pdf", sep = "")
 outPathCorrReg <- paste("../analysis/corr PCA confounders regressed "
                         , outInfo, ".pdf", sep = "")
@@ -59,14 +59,19 @@ a9sNmetaDF$SampleID[c(1:11)] <- paste(
   "X", a9sNmetaDF$SampleID[c(1:11)], sep = "")
 
 # Subset and combine
-subA9sNmetaDF <- a9sNmetaDF[ ,c("SampleID", "RIN.RQI", "Total_Reads", "Type")]
+subA9sNmetaDF <- a9sNmetaDF[ ,c("SampleID", "RIN.RQI", "Total_Reads"
+                                , "Percent.Aligned", "Type")]
+subA9sNmetaDF$Percent.Aligned <- subA9sNmetaDF$Total_Reads * subA9sNmetaDF$Percent.Aligned 
 subCortexMetaDF <- cbind(
-  cortexMetaDF[ ,c("Sample.Name", "RIN", "TotalReads.picard")], Type = "cortex")
+  cortexMetaDF[ ,c("Sample.Name", "RIN", "TotalReads.picard"
+                   , "Aligned.Reads.picard")], Type = "cortex")
 subNeuronMetaDF <- cbind(colnames(exprDatM)[25:32]
-  , neuronMetaDF[ ,c("RNA.RIN", "sepDepth.PF1.indexMatch")], Type = "iPSCneuron")
-metaDatDF <- rbind(subA9sNmetaDF
-                   , setNames(subCortexMetaDF, names(subA9sNmetaDF))
-                   , setNames(subNeuronMetaDF, names(subA9sNmetaDF)))
+  , neuronMetaDF[ ,c("RNA.RIN", "sepDepth.PF1.indexMatch", "UniqueMapped")]
+  , Type = "iPSCneuron")
+mDatColNames <- c("SampleID", "RIN", "Total_Reads", "Aligned_Reads", "Type")
+metaDatDF <- rbind(setNames(subA9sNmetaDF, mDatColNames)
+                   , setNames(subCortexMetaDF, mDatColNames)
+                   , setNames(subNeuronMetaDF, mDatColNames))
 ################################################################################
 
 # PC Analysis
@@ -111,8 +116,8 @@ colnames(topPCs) <- paste("Unregressed\n", colnames(topPCs)
 
 pairsDat <- data.frame(type = as.factor(metaDatDF$Type)
                      , totalReads = as.numeric(metaDatDF$Total_Reads)
-                     # , percentAligned = as.numeric(metaDatDF$Percent.Aligned)
-                     , RIN = as.numeric(metaDatDF$RIN.RQI)
+                     , alignedReads = as.numeric(metaDatDF$Aligned_Reads)
+                     , RIN = as.numeric(metaDatDF$RIN)
                      , A9.markers = markersME
                      , A9.antiMarkers = antiMarkME)
 
@@ -162,8 +167,8 @@ bs <- function(formula, data, indices) {
 # rin=as.numeric(targets[7:16, ]$RIN.RQI)
 # regVars <- as.data.frame(cbind(age,sex,pmi,rin))
 
-regVars <- data.frame(totalReads = as.numeric(metaDatDF$Total_Reads)
-                      , RIN = as.numeric(metaDatDF$RIN.RQI))
+regVars <- data.frame(alignedReads = as.numeric(metaDatDF$Aligned_Reads)
+                      , RIN = as.numeric(metaDatDF$RIN))
 
 # Regress out confounding variables
 RegConf <- function (exprDatM) {
@@ -192,7 +197,7 @@ RegConf <- function (exprDatM) {
   } else {
     for (i in 1:nrow(exprDatM)) {
       if (i%%1000 == 0) {print(i)}
-      linMod <- lm(as.numeric(exprDatM[i, ]) ~ totalReads + RIN, data = regVars)
+      linMod <- lm(as.numeric(exprDatM[i, ]) ~ alignedReads + RIN, data = regVars)
       # The full data - the undesired covariates
       exprDatRegM[i,] <- coef(linMod)[1] + linMod$residuals
       # lmmod1 <- lm(as.numeric(exprDatM[i, ]) ~ condition + age + sex + pmi, data = regVars)
@@ -245,8 +250,8 @@ colnames(topPCsReg) <- paste("Regressed\n", colnames(topPCsReg)
 
 pairsDat <- data.frame(type = as.factor(metaDatDF$Type)
                        , totalReads = as.numeric(metaDatDF$Total_Reads)
-                       # , percentAligned = as.numeric(metaDatDF$Percent.Aligned)
-                       , RIN = as.numeric(metaDatDF$RIN.RQI))
+                       , AlignedReads = as.numeric(metaDatDF$Aligned_Reads)
+                       , RIN = as.numeric(metaDatDF$RIN))
 
 pdf(outPathCorrReg, height = 20, width = 24)
 pairs(cbind(pairsDat, topPCs, topPCsReg), col = cond, pch = 19
