@@ -8,6 +8,7 @@
 
 # Outputs:
 #   Histogram post CQN normalization of GC and gene length correlations
+#   Boxplot of gene expression post CQN
 #   Table of normalized gene expression
 
 # Load data
