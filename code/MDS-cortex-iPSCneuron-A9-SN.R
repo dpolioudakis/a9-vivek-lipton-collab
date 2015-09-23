@@ -17,33 +17,40 @@ library(reshape2)
 library(ggplot2)
 library(biomaRt)
 
+# Parameters
+outpathInfo <- " cortex-iPSCneuron-humanSN-iPSCa9 readDF5 CQN-GC-geneLength-quantile regRIN"
+graphSubTitle <- paste("\nVivek Cortex, Yuan iPSC Neurons, Lipton iPSC A9 and human SN"
+                       , "\nread depth filter: 5"
+                       , "\nCQN GC, gene length, quantile"
+                       , "\nregressed out RIN"
+                       , "\nMDS-cortex-iPSCneuron-A9-SN.R", sep = "")
+# For properly labeling samples after MDS calculation
+type <- as.factor(c(rep("cortex", 9), rep("2", 3)
+                    , rep("human substantia nigra", 5), rep("7",3)
+                    , rep("human substantia nigra", 4)
+                    , rep("iPSC neuron", 8)))
+
 # Input file paths (choose 1)
 # Load CQN normalized expression values for hESC A9 and human substantia nigra
 # samples
 load("../processed_data/HTSeqUnion_Gene_CQN_OutlierRemoved_cortex_iPSCneuron_humanSN_RDF5.rda")
 load("../processed_data/HTSeqUnion_Gene_CQN_OutlierRemoved_A9_SN_cortex_iPSCneuron_RDF5_regRINtotalReads.rda")
-exprDat <- as.data.frame(cqnDat)
+load("../processed_data/HTSeqUnion_Gene_CQN_OutlierRemoved_A9_SN_cortex_iPSCneuron_RDF5_regRINalignedReads.rda")
+load("../processed_data/HTSeqUnion_Gene_A9-SN-cortex-iPSCneuron_RDF5_CQN-geneLength-GC-quantile_OutlierRemoved_regRIN.rda")
+exprDat <- as.data.frame(exprRegM)
 
 # Output file paths and variables
-outInfo <- " cortex iPSCneuron humanSN A9 readDF5 CQN regRINtotalReads"
 outpathAllGenes <- paste(
   "../analysis/MDS all genes"
-  , outInfo, ".pdf", sep="")
+  , outpathInfo, ".pdf", sep="")
 outpathMarks <- paste(
   "../analysis/MDS marker genes"
-  , outInfo, ".pdf", sep="")
+  , outpathInfo, ".pdf", sep="")
 outpathCAC <- paste(
   "../analysis/MDS CACNA1D"
-  , outInfo, ".pdf", sep="")
+  , outpathInfo, ".pdf", sep="")
 
 # Other variables
-graphSubTitle <- paste("\nread depth filter: 5"
-                     , "\nregressed out RIN and total Reads"
-                     , "\nMDS-cortex-iPSCneuron-A9-SN.R", sep = "")
-type <- as.factor(c(rep("cortex", 9), rep("2", 3)
-                    , rep("human substantia nigra", 5), rep("7",3)
-                    , rep("human substantia nigra", 4)
-                    , rep("iPSC neuron", 8)))
 # Data frame of Ensembl IDs, gene symbols, and status as marker or anti-marker
 markersDF <- data.frame(
   ensembl = c(
@@ -102,11 +109,12 @@ ggplot(mdsDF, aes(x = X1, y = X2)) +
   xlab(paste("PC1 (", signif(100*mdsDF$pc1, 3), "%)", sep = "")) +
   ylab(paste("PC2 (", signif(100*mdsDF$pc2, 3), "%)", sep = "")) +
   labs(title = paste(
-    "MDS plot: All genes expression - Vivek Cortex, Lipton iPSC A9 and human SN"
-    , graphSubTitle, sep = "")) +
+    "MDS plot: All genes expression", graphSubTitle, sep = "")) +
   theme_grey(base_size = 16) +
   theme(axis.text = element_text(color = "black"))
 ggsave(file = outpathAllGenes, height = 9)
+distM <- dist(t(data.frame(exprDat[ ,4:ncol(exprDat)])))
+plot(hclust(distM))
 
 # MDS Marker Genes
 
@@ -128,11 +136,12 @@ ggplot(mdsDF, aes(x = X1, y = X2)) +
   xlab(paste("PC1 (", signif(100*mdsDF$pc1, 3), "%)", sep = "")) +
   ylab(paste("PC2 (", signif(100*mdsDF$pc2, 3), "%)", sep = "")) +
   labs(title = paste(
-    "MDS plot: A9 markers expression - Vivek Cortex, Lipton iPSC A9 and human SN"
-    , graphSubTitle, sep = "")) +
+    "MDS plot: A9 markers expression", graphSubTitle, sep = "")) +
   theme_grey(base_size = 16) +
   theme(axis.text = element_text(color = "black"))
 ggsave(file = outpathMarks, height = 9)
+distM <- dist(t(data.frame(markExprDF[ ,4:ncol(markExprDF)])))
+plot(hclust(distM))
 
 # MDS CACNA1D
 
@@ -159,3 +168,6 @@ ggplot(mdsDF, aes(x = X1, y = X2)) +
   theme_grey(base_size = 16) +
   theme(axis.text = element_text(color = "black"))
 ggsave(file = outpathCAC, height = 9)
+
+distM <- dist(t(data.frame(cACNA1Ddat[ ,4:ncol(cACNA1Ddat)])))
+plot(hclust(distM))
