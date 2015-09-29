@@ -51,6 +51,8 @@ load("../Vivek_WGCNA_Lipton_A9_SN/GC18unionAnno.Rdata")
 gc18unionAnno <- gc18unionAnno
 
 # Output file paths and variables
+outpathExprBoxplotPreCQN <- paste("../analysis/CQN-pre boxplot expression "
+                                  , outPathInfo, ".pdf", sep="")
 outpathCQNhist <- paste("../analysis/CQN QC histogram "
   , outPathInfo, ".pdf", sep="")
 outpathExprBoxplot <- paste("../analysis/CQN-post boxplot expression "
@@ -109,6 +111,19 @@ FilterDepth <- function (exrDatDF) {
 }
 exprDatDF <- FilterDepth(exprDatDF)
 
+# Boxplot of expression values pre CQN
+meltExprDat <- melt(exprDatDF)
+ggplot(meltExprDat, aes(y = value, x = variable)) +
+  geom_boxplot() +
+  coord_cartesian(ylim = c(-10, 10000)) +
+  ylab("Expression") +
+  xlab("Samples") +
+  labs(title = paste("Expression: Pre CQN"
+                     , graphSubTitle, sep = "")) +
+  theme_grey(base_size = 16) +
+  theme(axis.text = element_text(color = "black")) +
+  theme(axis.text.x = element_text(angle = 90))
+ggsave(file = outpathExprBoxplotPreCQN, height = 10)
 
 # Use CQN to normalize for GC content and gene length
 RunCQN <- function (exprDatDF) {
@@ -182,7 +197,7 @@ ggplot(meltCQNdat, aes(y = value, x = Var2)) +
   theme_grey(base_size = 16) +
   theme(axis.text = element_text(color = "black")) +
   theme(axis.text.x = element_text(angle = 90))
-ggsave(file = outpathExprBoxplot, height = 6)
+ggsave(file = outpathExprBoxplot, height = 10)
 
 # Outlier Removal based on connectivity
 sdOut <- 2
