@@ -27,13 +27,13 @@ graphSubTitle <- paste("\nVivek Cortex, Lipton iPSC A9 and human SN"
                        , "\nregressed out RIN"
                        , "\nMDS-cortex-iPSCneuron-A9-SN.R", sep = "")
 # For properly labeling samples after MDS calculation
-# type <- as.factor(c(rep("cortex", 9), rep("2", 3)
-#                     , rep("human substantia nigra", 5), rep("7",3)
-#                     , rep("human substantia nigra", 4)
-#                     , rep("iPSC neuron", 8)))
 type <- as.factor(c(rep("cortex", 9), rep("2", 3)
                     , rep("human substantia nigra", 5), rep("7",3)
-                    , rep("human substantia nigra", 5)))
+                    , rep("human substantia nigra", 4)
+                    , rep("iPSC neuron", 8)))
+# type <- as.factor(c(rep("cortex", 9), rep("2", 3)
+#                     , rep("human substantia nigra", 5), rep("7",3)
+#                     , rep("human substantia nigra", 5)))
 
 
 # Input file paths (choose 1)
@@ -42,19 +42,34 @@ type <- as.factor(c(rep("cortex", 9), rep("2", 3)
 load("../processed_data/HTSeqUnion_Gene_CQN_OutlierRemoved_cortex_iPSCneuron_humanSN_RDF5.rda")
 load("../processed_data/HTSeqUnion_Gene_CQN_OutlierRemoved_A9_SN_cortex_iPSCneuron_RDF5_regRINtotalReads.rda")
 load("../processed_data/HTSeqUnion_Gene_CQN_OutlierRemoved_A9_SN_cortex_iPSCneuron_RDF5_regRINalignedReads.rda")
-load("../processed_data/HTSeqUnion_Gene_A9-SN-cortex-iPSCneuron_RDF5_CQN-geneLength-GC-quantile_OutlierRemoved_regRIN.rda")
 load("../processed_data/HTSeqUnion_Gene_A9-SN-cortex_RDF5_CQN-geneLength-GC-quantile_OutlierRemoved_regRIN.rda")
-exprDat <- as.data.frame(exprRegM)
+load("../processed_data/HTSeqUnion_Gene_A9-SN-cortex-iPSCneuron_RDF5_CQN-geneLength-GC-quantile_OutlierRemoved_regRIN.rda")
+exprDatDF <- as.data.frame(exprRegM)
 
 # Output file paths and variables
 outpathAllGenes <- paste(
   "../analysis/MDS all genes"
   , outpathInfo, ".pdf", sep="")
+outDendroAllGenes <- paste(
+  "../analysis/Dendro all genes"
+  , outpathInfo, ".pdf", sep="")
 outpathMarks <- paste(
   "../analysis/MDS marker genes"
   , outpathInfo, ".pdf", sep="")
+outDendroMarks <- paste(
+  "../analysis/Dendro marker genes"
+  , outpathInfo, ".pdf", sep="")
 outpathCAC <- paste(
   "../analysis/MDS CACNA1D"
+  , outpathInfo, ".pdf", sep="")
+outDendroCAC <- paste(
+  "../analysis/Dendro CACNA1D genes"
+  , outpathInfo, ".pdf", sep="")
+outpathAllen <- paste(
+  "../analysis/MDS Allen"
+  , outpathInfo, ".pdf", sep="")
+outDendroAllen <- paste(
+  "../analysis/Dendro Allen genes"
   , outpathInfo, ".pdf", sep="")
 
 # Other variables
@@ -102,7 +117,7 @@ calcMDS <- function (exprDF) {
 # MDS All Genes
 
 # Calculate MDS
-mdsDF <- calcMDS(exprDat)
+mdsDF <- calcMDS(exprDatDF)
 # Add column with sample type info
 mdsDF$type <- type
 
@@ -120,13 +135,37 @@ ggplot(mdsDF, aes(x = X1, y = X2)) +
   theme_grey(base_size = 16) +
   theme(axis.text = element_text(color = "black"))
 ggsave(file = outpathAllGenes, height = 9)
-distM <- dist(t(data.frame(exprDat[ ,4:ncol(exprDat)])))
-plot(hclust(distM))
+
+distM <- dist(t(data.frame(exprDatDF)))
+formattedDatDF <- t(exprDatDF)
+rownames(formattedDatDF) <- c(rep("Cortex", 9), rep("High_MEF2C", 3)
+                      , rep("Substantia_Nigra", 5), rep("Low_MEF2C", 3)
+                     , rep("Substantia_Nigra", 4), rep("iPSC_Neuron", 8))
+colorCodes <- c(Cortex = "darkgreen", High_MEF2C = "red", Low_MEF2C = "gold"
+                , Substantia_Nigra = "blue", iPSC_Neuron = "purple")
+distM <- dist(formattedDatDF)
+# Function to set label color
+labelCol <- function(x) {
+  if (is.leaf(x)) {
+    # fetch label
+    label <- attr(x, "label")
+    attr(x, "nodePar") <- list(lab.col = colorCodes[label], pch = NA)
+  }
+  return(x)
+}
+hC <- hclust(distM, method = "average")
+hC <- dendrapply(as.dendrogram(hC), labelCol)
+pdf(file = outDendroAllGenes)
+par(mar = c(8,4,9,2))
+plot(hC, ylab = "Height", main = paste("Heirarchical Clustering: All Genes"
+                                       , "\nEuclidean Distance, Average Linkage"
+                                       , graphSubTitle, sep = ""))
+dev.off()
 
 # MDS Marker Genes
 
 # Merge with Lipton expression values
-markExprDF <- merge(markersDF, exprDat, by.x = "ensembl", by.y = "row.names")
+markExprDF <- merge(markersDF, exprDatDF, by.x = "ensembl", by.y = "row.names")
 
 # Calculate MDS
 mdsDF <- calcMDS(markExprDF[ ,4:ncol(markExprDF)])
@@ -147,8 +186,20 @@ ggplot(mdsDF, aes(x = X1, y = X2)) +
   theme_grey(base_size = 16) +
   theme(axis.text = element_text(color = "black"))
 ggsave(file = outpathMarks, height = 9)
-distM <- dist(t(data.frame(markExprDF[ ,4:ncol(markExprDF)])))
-plot(hclust(distM))
+
+formattedDatDF <- t(markExprDF[ ,4:ncol(markExprDF)])
+rownames(formattedDatDF) <- c(rep("Cortex", 9), rep("High_MEF2C", 3)
+                              , rep("Substantia_Nigra", 5), rep("Low_MEF2C", 3)
+                              , rep("Substantia_Nigra", 4), rep("iPSC_Neuron", 8))
+distM <- dist(formattedDatDF)
+hC <- hclust(distM, method = "average")
+hC <- dendrapply(as.dendrogram(hC), labelCol)
+pdf(file = outDendroMarks)
+par(mar = c(8,4,9,2))
+plot(hC, ylab = "Height", main = paste("Heirarchical Clustering: Marker Genes"
+                                       , "\nEuclidean Distance, Average Linkage"
+                                       , graphSubTitle, sep = ""))
+dev.off()
 
 # MDS CACNA1D
 
@@ -176,5 +227,77 @@ ggplot(mdsDF, aes(x = X1, y = X2)) +
   theme(axis.text = element_text(color = "black"))
 ggsave(file = outpathCAC, height = 9)
 
-distM <- dist(t(data.frame(cACNA1Ddat[ ,4:ncol(cACNA1Ddat)])))
-plot(hclust(distM))
+formattedDatDF <- t(data.frame(cACNA1Ddat[ ,4:ncol(cACNA1Ddat)]))
+rownames(formattedDatDF) <- c(rep("Cortex", 9), rep("High_MEF2C", 3)
+                              , rep("Substantia_Nigra", 5), rep("Low_MEF2C", 3)
+                              , rep("Substantia_Nigra", 4), rep("iPSC_Neuron", 8))
+distM <- dist(formattedDatDF)
+hC <- hclust(distM, method = "average")
+hC <- dendrapply(as.dendrogram(hC), labelCol)
+pdf(file = outDendroCAC)
+par(mar = c(8,4,9,2))
+plot(hC, ylab = "Height", main = paste("Heirarchical Clustering: CACNA1D"
+                                       , "\nEuclidean Distance, Average Linkage"
+                                       , graphSubTitle, sep = ""))
+dev.off()
+################################################################################
+
+# MADS A9 marker genes from Allen
+
+# Other variables
+# Data frame of Ensembl IDs, gene symbols, and status as marker or anti-marker
+markersDF <- data.frame(
+  ensembl = c(
+    "ENSG00000180176",
+    "ENSG00000157542",
+    "ENSG00000165646",
+    "ENSG00000157388",
+    "ENSG00000165092",
+    
+    "ENSG00000104327"
+  )
+  , gene = c(
+    #markers
+    "TH", "KCNJ7","VMAT2","CACNA1D","ALDH1",
+    #anti markers
+    "CALB1"
+    #"NOLZ1"(also known as ZNF503)
+  )
+  , type = c(rep("marker",5),rep("anti-marker",1)))
+
+# Merge with Lipton expression values
+markExprDF <- merge(markersDF, exprDatDF, by.x = "ensembl", by.y = "row.names")
+
+# Calculate MDS
+mdsDF <- calcMDS(markExprDF[ ,4:ncol(markExprDF)])
+# Add column with sample type info
+mdsDF$type <- type
+
+ggplot(mdsDF, aes(x = X1, y = X2)) +
+  geom_point(aes(color = factor(type)), size = 4) +
+  geom_text(aes(label = row.names(mdsDF)), vjust = -1) +
+  scale_color_discrete(name = "Sample Type"
+                       , labels = c("(2) High MEF2C", "(7) Low MEF2C"
+                                    , "Human Cortex", "Human Substantia Nigra"
+                                    , "iPSC neuron")) +
+  xlab(paste("PC1 (", signif(100*mdsDF$pc1, 3), "%)", sep = "")) +
+  ylab(paste("PC2 (", signif(100*mdsDF$pc2, 3), "%)", sep = "")) +
+  labs(title = paste(
+    "MDS plot: Allen A9 markers expression", graphSubTitle, sep = "")) +
+  theme_grey(base_size = 16) +
+  theme(axis.text = element_text(color = "black"))
+ggsave(file = outpathAllen, height = 9)
+
+formattedDatDF <- t(markExprDF[ ,4:ncol(markExprDF)])
+rownames(formattedDatDF) <- c(rep("Cortex", 9), rep("High_MEF2C", 3)
+                              , rep("Substantia_Nigra", 5), rep("Low_MEF2C", 3)
+                              , rep("Substantia_Nigra", 4), rep("iPSC_Neuron", 8))
+distM <- dist(formattedDatDF)
+hC <- hclust(distM, method = "average")
+hC <- dendrapply(as.dendrogram(hC), labelCol)
+pdf(file = outDendroAllen)
+par(mar = c(8,4,9,2))
+plot(hC, ylab = "Height", main = paste("Heirarchical Clustering: Allen Marker Genes"
+                                       , "\nEuclidean Distance, Average Linkage"
+                                       , graphSubTitle, sep = ""))
+dev.off()
