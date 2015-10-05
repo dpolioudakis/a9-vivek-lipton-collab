@@ -123,7 +123,7 @@ mdsDF$type <- type
 
 ggplot(mdsDF, aes(x = X1, y = X2)) +
   geom_point(aes(color = factor(type)), size = 4) +
-  geom_text(aes(label = row.names(mdsDF)), vjust = -1) +
+  # geom_text(aes(label = row.names(mdsDF)), vjust = -1) +
   scale_color_discrete(name = "Sample Type"
                        , labels = c("(2) High MEF2C", "(7) Low MEF2C"
                                     , "Human Cortex", "Human Substantia Nigra"
@@ -133,7 +133,8 @@ ggplot(mdsDF, aes(x = X1, y = X2)) +
   labs(title = paste(
     "MDS plot: All genes expression", graphSubTitle, sep = "")) +
   theme_grey(base_size = 16) +
-  theme(axis.text = element_text(color = "black"))
+  theme(axis.text = element_text(color = "black")) +
+  theme(aspect.ratio = 4/5)
 ggsave(file = outpathAllGenes, height = 9)
 
 formattedDatDF <- t(exprDatDF)
@@ -177,7 +178,7 @@ mdsDF$type <- type
 
 ggplot(mdsDF, aes(x = X1, y = X2)) +
   geom_point(aes(color = factor(type)), size = 4) +
-  geom_text(aes(label = row.names(mdsDF)), vjust = -1) +
+  # geom_text(aes(label = row.names(mdsDF)), vjust = -1) +
   scale_color_discrete(name = "Sample Type"
                        , labels = c("(2) High MEF2C", "(7) Low MEF2C"
                        , "Human Cortex", "Human Substantia Nigra"
@@ -187,7 +188,8 @@ ggplot(mdsDF, aes(x = X1, y = X2)) +
   labs(title = paste(
     "MDS plot: A9 markers expression", graphSubTitle, sep = "")) +
   theme_grey(base_size = 16) +
-  theme(axis.text = element_text(color = "black"))
+  theme(axis.text = element_text(color = "black")) +
+  theme(aspect.ratio = 4/5)
 ggsave(file = outpathMarks, height = 9)
 
 formattedDatDF <- t(markExprDF[ ,4:ncol(markExprDF)])
@@ -220,7 +222,7 @@ mdsDF$type <- type
 
 ggplot(mdsDF, aes(x = X1, y = X2)) +
   geom_point(aes(color = factor(type)), size = 4) +
-  geom_text(aes(label = row.names(mdsDF)), vjust = -1) +
+  # geom_text(aes(label = row.names(mdsDF)), vjust = -1) +
   scale_color_discrete(name = "Sample Type"
                        , labels = c("(2) High MEF2C", "(7) Low MEF2C"
                                     , "Human Cortex", "Human Substantia Nigra"
@@ -231,7 +233,8 @@ ggplot(mdsDF, aes(x = X1, y = X2)) +
     "MDS plot: CACNA1D expression - Vivek Cortex, Lipton iPSC A9 and human SN"
     , graphSubTitle, sep = "")) +
   theme_grey(base_size = 16) +
-  theme(axis.text = element_text(color = "black"))
+  theme(axis.text = element_text(color = "black")) +
+  theme(aspect.ratio = 4/5)
 ggsave(file = outpathCAC, height = 9)
 
 formattedDatDF <- t(data.frame(cACNA1Ddat[ ,4:ncol(cACNA1Ddat)]))
@@ -287,7 +290,7 @@ mdsDF$type <- type
 
 ggplot(mdsDF, aes(x = X1, y = X2)) +
   geom_point(aes(color = factor(type)), size = 4) +
-  geom_text(aes(label = row.names(mdsDF)), vjust = -1) +
+  # geom_text(aes(label = row.names(mdsDF)), vjust = -1) +
   scale_color_discrete(name = "Sample Type"
                        , labels = c("(2) High MEF2C", "(7) Low MEF2C"
                                     , "Human Cortex", "Human Substantia Nigra"
@@ -297,7 +300,8 @@ ggplot(mdsDF, aes(x = X1, y = X2)) +
   labs(title = paste(
     "MDS plot: Allen A9 markers expression", graphSubTitle, sep = "")) +
   theme_grey(base_size = 16) +
-  theme(axis.text = element_text(color = "black"))
+  theme(axis.text = element_text(color = "black")) +
+  theme(aspect.ratio = 4/5)
 ggsave(file = outpathAllen, height = 9)
 
 formattedDatDF <- t(markExprDF[ ,4:ncol(markExprDF)])
