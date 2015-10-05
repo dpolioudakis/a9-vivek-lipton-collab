@@ -136,14 +136,13 @@ ggplot(mdsDF, aes(x = X1, y = X2)) +
   theme(axis.text = element_text(color = "black"))
 ggsave(file = outpathAllGenes, height = 9)
 
-distM <- dist(t(data.frame(exprDatDF)))
 formattedDatDF <- t(exprDatDF)
 rownames(formattedDatDF) <- c(rep("Cortex", 9), rep("High_MEF2C", 3)
                       , rep("Substantia_Nigra", 5), rep("Low_MEF2C", 3)
                      , rep("Substantia_Nigra", 4), rep("iPSC_Neuron", 8))
 colorCodes <- c(Cortex = "darkgreen", High_MEF2C = "red", Low_MEF2C = "gold"
                 , Substantia_Nigra = "blue", iPSC_Neuron = "purple")
-distM <- dist(formattedDatDF)
+distObj <- dist(formattedDatDF)
 # Function to set label color
 labelCol <- function(x) {
   if (is.leaf(x)) {
@@ -153,14 +152,18 @@ labelCol <- function(x) {
   }
   return(x)
 }
-hC <- hclust(distM, method = "average")
+hC <- hclust(distObj, method = "average")
 hC <- dendrapply(as.dendrogram(hC), labelCol)
 pdf(file = outDendroAllGenes)
 par(mar = c(8,4,9,2))
-plot(hC, ylab = "Height", main = paste("Heirarchical Clustering: All Genes"
+plot(hC, ylab = "Height", main = paste("Hierarchical Clustering: All Genes"
                                        , "\nEuclidean Distance, Average Linkage"
                                        , graphSubTitle, sep = ""))
 dev.off()
+dM <- as.matrix(distObj)
+sapply(c("High_MEF2C", "Low_MEF2C", "iPSC_Neuron", "Cortex")
+       , function(x) mean(dM[rownames(dM) == "Substantia_Nigra"
+                             , colnames(dM) == x]))
 
 # MDS Marker Genes
 
@@ -191,15 +194,19 @@ formattedDatDF <- t(markExprDF[ ,4:ncol(markExprDF)])
 rownames(formattedDatDF) <- c(rep("Cortex", 9), rep("High_MEF2C", 3)
                               , rep("Substantia_Nigra", 5), rep("Low_MEF2C", 3)
                               , rep("Substantia_Nigra", 4), rep("iPSC_Neuron", 8))
-distM <- dist(formattedDatDF)
-hC <- hclust(distM, method = "average")
+distObj <- dist(formattedDatDF)
+hC <- hclust(distObj, method = "average")
 hC <- dendrapply(as.dendrogram(hC), labelCol)
 pdf(file = outDendroMarks)
 par(mar = c(8,4,9,2))
-plot(hC, ylab = "Height", main = paste("Heirarchical Clustering: Marker Genes"
+plot(hC, ylab = "Height", main = paste("Hierarchical Clustering: Marker Genes"
                                        , "\nEuclidean Distance, Average Linkage"
                                        , graphSubTitle, sep = ""))
 dev.off()
+dM <- as.matrix(distObj)
+sapply(c("High_MEF2C", "Low_MEF2C", "iPSC_Neuron", "Cortex")
+       , function(x) mean(dM[rownames(dM) == "Substantia_Nigra"
+                             , colnames(dM) == x]))
 
 # MDS CACNA1D
 
@@ -231,15 +238,20 @@ formattedDatDF <- t(data.frame(cACNA1Ddat[ ,4:ncol(cACNA1Ddat)]))
 rownames(formattedDatDF) <- c(rep("Cortex", 9), rep("High_MEF2C", 3)
                               , rep("Substantia_Nigra", 5), rep("Low_MEF2C", 3)
                               , rep("Substantia_Nigra", 4), rep("iPSC_Neuron", 8))
-distM <- dist(formattedDatDF)
-hC <- hclust(distM, method = "average")
+distObj <- dist(formattedDatDF)
+hC <- hclust(distObj, method = "average")
 hC <- dendrapply(as.dendrogram(hC), labelCol)
 pdf(file = outDendroCAC)
 par(mar = c(8,4,9,2))
-plot(hC, ylab = "Height", main = paste("Heirarchical Clustering: CACNA1D"
+plot(hC, ylab = "Height", main = paste("Hierarchical Clustering: CACNA1D"
                                        , "\nEuclidean Distance, Average Linkage"
                                        , graphSubTitle, sep = ""))
 dev.off()
+dM <- as.matrix(distObj)
+sapply(c("High_MEF2C", "Low_MEF2C", "iPSC_Neuron", "Cortex")
+       , function(x) mean(dM[rownames(dM) == "Substantia_Nigra"
+                             , colnames(dM) == x]))
+
 ################################################################################
 
 # MADS A9 marker genes from Allen
@@ -292,12 +304,16 @@ formattedDatDF <- t(markExprDF[ ,4:ncol(markExprDF)])
 rownames(formattedDatDF) <- c(rep("Cortex", 9), rep("High_MEF2C", 3)
                               , rep("Substantia_Nigra", 5), rep("Low_MEF2C", 3)
                               , rep("Substantia_Nigra", 4), rep("iPSC_Neuron", 8))
-distM <- dist(formattedDatDF)
-hC <- hclust(distM, method = "average")
+distObj <- dist(formattedDatDF)
+hC <- hclust(distObj, method = "average")
 hC <- dendrapply(as.dendrogram(hC), labelCol)
 pdf(file = outDendroAllen)
 par(mar = c(8,4,9,2))
-plot(hC, ylab = "Height", main = paste("Heirarchical Clustering: Allen Marker Genes"
+plot(hC, ylab = "Height", main = paste("Hierarchical Clustering: Allen Marker Genes"
                                        , "\nEuclidean Distance, Average Linkage"
                                        , graphSubTitle, sep = ""))
 dev.off()
+dM <- as.matrix(distObj)
+sapply(c("High_MEF2C", "Low_MEF2C", "iPSC_Neuron", "Cortex")
+       , function(x) mean(dM[rownames(dM) == "Substantia_Nigra"
+                             , colnames(dM) == x]))
