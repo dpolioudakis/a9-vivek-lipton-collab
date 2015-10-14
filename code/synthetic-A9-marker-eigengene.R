@@ -245,8 +245,9 @@ print("#######################################################################")
 # A9 markers from Allen Brain Atlas
 markerGenes <- c("ALDH1A1", "TH", "SLC18A2", "KCNJ6", "CACNA1D", "CALB1")
 # Liptons's A9 markers
-markerGenes <- c("ALDH1A1", "TH", "SLC18A2", "CACNA1D", "CALB1", "CALB2"
-                 , "KCNJ6", "LMX1A", "FOXA2", "NR4A2", "ALDH1A1")
+markerGenes <- c("ALDH1A1", "TH", "SLC18A2", "CACNA1D"
+                 , "KCNJ6", "LMX1A", "FOXA2", "NR4A2")
+
 exprA9sNdF <- exprDataA9sNdF
 
 # DF of Ensembl ID and Gene symbol
@@ -296,5 +297,59 @@ ggplot(data = markerMEa9sNdF, aes(x = module, y = MEexpression)) +
   theme(aspect.ratio = 4/4)
 ggsave(file = paste(
   "../analysis/Synthetic Allen A9 marker ME expression readDF"
+  , "cortex-humanSN-iPSCa9 readDF5 CQN-GC-geneLength-quantile regRIN.pdf"
+  , sep=""))
+
+# Boxplot for antimarkers
+antiMarkGenes <- c("CALB1", "CALB2")
+exprA9sNdF <- exprDataA9sNdF
+
+# DF of Ensembl ID and Gene symbol
+genesEnsemblDF <- AddEnsembl(antiMarkGenes)
+
+print("Marker genes in Lipton data:")
+table(row.names(exprA9sNdF) %in% genesEnsemblDF[ ,1])
+exprA9sNdF$marker <- "grey"
+exprA9sNdF$marker[row.names(exprA9sNdF) %in% genesEnsemblDF[ ,1]] <- "marker"
+exprA9sNdF <- exprA9sNdF[exprA9sNdF$marker == "marker", ]
+
+
+markerMEa9sNdF <- moduleEigengenes(t(exprA9sNdF[ ,-(ncol(exprA9sNdF))])
+                                   , exprA9sNdF$marker)$eigengenes
+markerMEa9sNdF$biorep <- as.factor(c(rep("cortex", 9), rep("2", 3)
+                                     , rep("human substantia nigra", 5), rep("7",3)
+                                     , rep("human substantia nigra", 4)
+                                     , rep("iPSC neuron", 8)))
+markerMEa9sNdF <- melt(markerMEa9sNdF, id.vars = "biorep")
+colnames(markerMEa9sNdF) <- c("biorep", "module", "MEexpression")
+
+# Boxplot of marker modules
+
+ggplot(data = markerMEa9sNdF, aes(x = module, y = MEexpression)) +
+  geom_boxplot(aes(fill=as.factor(biorep))) +
+  scale_fill_discrete(name= "Sample Type",
+                      labels= c(  "(2) High MEF2C"
+                                  , "(7) Low MEF2C"
+                                  , "Human Cortex"
+                                  , "Human Subsantia Nigra"
+                                  , "iPSC Neuron")) +
+  ylab("ME Expression (arbitrary value)") +
+  xlab("Sample Type") +
+  labs(title = paste(
+    "synthetic-A9-marker-eigengene.R"
+    , "\nSynthetic ME Allen A9 marker expression in"
+    , "\nLipton A9 and human substantia nigra, Vivek Cortex, Yuan iPSC neuron"
+    , "\nMarker genes:", c(list(markerGenes))
+    , "\nCQN normalized: GC, gene length, quantile"
+    , "\nRIN regressed out"
+    , "\nread depth filter: ", readDepthFilt
+    , sep = "")) +
+  theme_grey(base_size = 18) +
+  theme(axis.text.x = element_blank()) +
+  theme(axis.text = element_text(color = "black")) +
+  theme(plot.title = element_text(size = rel(0.6))) +
+  theme(aspect.ratio = 4/4)
+ggsave(file = paste(
+  "../analysis/Synthetic Allen A9 anti-marker ME expression readDF"
   , "cortex-humanSN-iPSCa9 readDF5 CQN-GC-geneLength-quantile regRIN.pdf"
   , sep=""))
