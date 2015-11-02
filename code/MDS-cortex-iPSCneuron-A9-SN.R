@@ -120,9 +120,11 @@ calcMDS <- function (exprDF) {
 mdsDF <- calcMDS(exprDatDF)
 # Add column with sample type info
 mdsDF$type <- type
+centroids <- aggregate(cbind(X1, X2)~type, mdsDF, mean)
 
-ggplot(mdsDF, aes(x = X1, y = X2)) +
-  geom_point(aes(color = factor(type)), size = 4) +
+ggplot(mdsDF, aes(x = X1, y = X2, color = factor(type))) +
+  geom_point(size = 3) +
+  geom_point(data = centroids, size = 6, shape = 3) +
   # geom_text(aes(label = row.names(mdsDF)), vjust = -1) +
   scale_color_discrete(name = "Sample Type"
                        , labels = c("(2) High MEF2C", "(7) Low MEF2C"
@@ -175,9 +177,11 @@ markExprDF <- merge(markersDF, exprDatDF, by.x = "ensembl", by.y = "row.names")
 mdsDF <- calcMDS(markExprDF[ ,4:ncol(markExprDF)])
 # Add column with sample type info
 mdsDF$type <- type
+centroids <- aggregate(cbind(X1, X2)~type, mdsDF, mean)
 
-ggplot(mdsDF, aes(x = X1, y = X2)) +
-  geom_point(aes(color = factor(type)), size = 4) +
+ggplot(mdsDF, aes(x = X1, y = X2, color = factor(type))) +
+  geom_point(size = 3) +
+  geom_point(data = centroids, size = 6, shape = 3) +
   # geom_text(aes(label = row.names(mdsDF)), vjust = -1) +
   scale_color_discrete(name = "Sample Type"
                        , labels = c("(2) High MEF2C", "(7) Low MEF2C"
@@ -219,9 +223,11 @@ cACNA1Ddat <- markExprDF[markExprDF$gene == "CACNA1D", ]
 mdsDF <- calcMDS(cACNA1Ddat[ ,4:ncol(cACNA1Ddat)])
 # Add column with sample type info
 mdsDF$type <- type
+centroids <- aggregate(cbind(X1, X2)~type, mdsDF, mean)
 
-ggplot(mdsDF, aes(x = X1, y = X2)) +
-  geom_point(aes(color = factor(type)), size = 4) +
+ggplot(mdsDF, aes(x = X1, y = X2, color = factor(type))) +
+  geom_point(size = 3) +
+  geom_point(data = centroids, size = 6, shape = 3) +
   # geom_text(aes(label = row.names(mdsDF)), vjust = -1) +
   scale_color_discrete(name = "Sample Type"
                        , labels = c("(2) High MEF2C", "(7) Low MEF2C"
