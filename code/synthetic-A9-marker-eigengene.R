@@ -50,13 +50,15 @@ AddEnsembl <- function (geneList) {
   # Attribute: values to retrieve
   # Filters: input query type
   # Values: input query
-  ensembl <- useMart("ensembl")
-  ensembl <- useDataset("hsapiens_gene_ensembl",mart=ensembl)
+  #ensembl <- useMart("ensembl")
+  ensembl <- useMart("ENSEMBL_MART_ENSEMBL", host="www.ensembl.org")
+  ensembl <- useDataset("hsapiens_gene_ensembl", mart=ensembl)
   # Data frame of module Ensembl IDs and gene symbols
   moduleEnsemblDF <- getBM(  attributes = c("ensembl_gene_id", "hgnc_symbol")
                              , filters = "hgnc_symbol"
                              , values = moduleGenes
-                             , mart = ensembl)
+                             , mart = ensembl
+                             )
   moduleEnsemblDF
 }
 
@@ -268,6 +270,19 @@ markerMEa9sNdF$biorep <- as.factor(c(rep("cortex", 9), rep("2", 3)
                                      , rep("iPSC neuron", 8)))
 markerMEa9sNdF <- melt(markerMEa9sNdF, id.vars = "biorep")
 colnames(markerMEa9sNdF) <- c("biorep", "module", "MEexpression")
+
+# Calculate pvalues using Welch's two sample t-test
+pvals <- data.frame(pval = c(
+  High_vs_Low_MEF2C = t.test(
+      subset(markerMEa9sNdF, biorep == "2")$MEexpression
+      , subset(markerMEa9sNdF, biorep == "7")$MEexpression)$p.value
+  , High_MEF2C_vs_SN = t.test(
+      subset(markerMEa9sNdF, biorep == "2")$MEexpression
+      , subset(markerMEa9sNdF, biorep == "human substantia nigra")$MEexpression)$p.value
+  , Low_MEF2C_vs_SN = t.test(
+      subset(markerMEa9sNdF, biorep == "7")$MEexpression
+      , subset(markerMEa9sNdF, biorep == "human substantia nigra")$MEexpression)$p.value
+  ))
 
 # Boxplot of marker modules
 
