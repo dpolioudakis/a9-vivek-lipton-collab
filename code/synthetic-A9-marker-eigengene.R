@@ -35,13 +35,7 @@ load("../Vivek_WGCNA_Lipton_A9_SN/HTSeqUnion_Exon_CQN_OutlierRemoved_humanSN_5.r
 # Vivek normalized RNAseq FPKMs from hESC derived A9 neuronal cultures
 load("../Vivek_WGCNA_Lipton_A9_SN/HTSeqUnion_Exon_CQN_OutlierRemoved_A9cells_5.rda")
 
-print("#######################################################################")
-
-# Boxplot of synthetic eigengene expressions in Lipton's hESC A9 cultures
-# Damon's A9 markers
-
-markerGenes <- c("ALDH1A1", "TH", "SLC18A2", "KCNJ6")
-exprA9sNdF <- exprDataA9sNdF
+# Functions:
 
 AddEnsembl <- function (geneList) {
   moduleGenes <- data.frame(geneList)
@@ -58,9 +52,17 @@ AddEnsembl <- function (geneList) {
                              , filters = "hgnc_symbol"
                              , values = moduleGenes
                              , mart = ensembl
-                             )
+  )
   moduleEnsemblDF
 }
+
+print("#######################################################################")
+
+# Boxplot of synthetic eigengene expressions in Lipton's hESC A9 cultures
+# Damon's A9 markers
+
+markerGenes <- c("ALDH1A1", "TH", "SLC18A2", "KCNJ6")
+exprA9sNdF <- exprDataA9sNdF
 
 # DF of Ensembl ID and Gene symbol
 genesEnsemblDF <- AddEnsembl(markerGenes)
@@ -257,6 +259,10 @@ genesEnsemblDF <- AddEnsembl(markerGenes)
 
 print("Marker genes in Lipton data:")
 table(row.names(exprA9sNdF) %in% genesEnsemblDF[ ,1])
+marksLeft <- merge(exprA9sNdF[row.names(exprA9sNdF) %in% genesEnsemblDF[ ,1], ]
+      , genesEnsemblDF
+      , by.x = "row.names", by.y = "ensembl_gene_id")$hgnc_symbol
+marksLeft
 exprA9sNdF$marker <- "grey"
 exprA9sNdF$marker[row.names(exprA9sNdF) %in% genesEnsemblDF[ ,1]] <- "marker"
 exprA9sNdF <- exprA9sNdF[exprA9sNdF$marker == "marker", ]
@@ -300,7 +306,8 @@ ggplot(data = markerMEa9sNdF, aes(x = module, y = MEexpression)) +
     "synthetic-A9-marker-eigengene.R"
     , "\nSynthetic ME Allen A9 marker expression in"
     , "\nLipton A9 and human substantia nigra, Vivek Cortex, Yuan iPSC neuron"
-    , "\nMarker genes:", c(list(markerGenes))
+    , "\nMarker genes:", c(list(markerGenes)) 
+    , "\nMarker genes in dataset:", c(list(marksLeft))
     , "\nCQN normalized: GC, gene length, quantile"
     , "\nRIN regressed out"
     , "\nread depth filter: ", readDepthFilt
