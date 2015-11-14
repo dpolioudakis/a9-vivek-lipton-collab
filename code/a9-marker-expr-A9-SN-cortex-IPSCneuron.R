@@ -18,7 +18,7 @@ library(biomaRt)
 
 # Parameters
 outpathInfo <- " cortex-humanSN-iPSCa9 readDF5 CQN-GC-geneLength-quantile regRIN"
-graphSubTitle <- paste("\nVivek Cortex, Lipton iPSC A9 and human SN"                       
+graphSubTitle <- paste("\nVivek Cortex, Yuan, iPSC neuron, Lipton iPSC A9 and human SN"                       
                        , "\nread depth filter: 5"
                        , "\nCQN GC, gene length, quantile"
                        , "\nregressed out RIN"
@@ -40,6 +40,12 @@ exprDataDF <- as.data.frame(exprRegM)
 # Output file paths and variables
 outpathMarks <- paste(
   "../analysis/A9 marker expression boxplot"
+  , outpathInfo, ".pdf", sep="")
+outpathPvals <- paste(
+  "../analysis/A9 marker expression pvals high vs low MEF2C"
+  , outpathInfo, ".txt", sep="")
+outpathCACNA1D <- paste(
+  "../analysis/CACNA1D expression boxplot"
   , outpathInfo, ".pdf", sep="")
 
 # Other variables
@@ -84,8 +90,22 @@ markersExprDF <- melt(markersExprDF, value.name="expression"
                       , id = c("gene","marker", "Row.names"))
 
 # Add column with sample type label
-markersExprDF <- cbind(markersExprDF
-                       , type = type)
+markersExprDF <- cbind(markersExprDF, type = type)
+
+markersExprLDF <- split(markersExprDF, markersExprDF$gene)
+
+################################################################################
+
+# Calculate pvalues and subset to high vs low MEF2C pvalue using Welch's two
+# sample t-test
+pvals <- lapply(markersExprLDF, function(gene) pairwise.t.test(
+  gene$expression, gene$type, p.adjust = "none", pool.sd = FALSE)[[3]][1])
+pvals <- pvals[! sapply(pvals, function(x) is.null(x[[1]]))]
+pvals <- round(t(data.frame(pvals)),3)
+colnames(pvals) <- "pvalues"
+
+write.table(pvals, outpathPvals, sep="\t", quote = FALSE)
+################################################################################
 
 # Plot marker genes expression
 ggplot(markersExprDF, aes(x = gene, y = expression)) + 
@@ -95,9 +115,24 @@ ggplot(markersExprDF, aes(x = gene, y = expression)) +
                                     , "Human Cortex", "Human Substantia Nigra"
                                     , "iPSC neuron")) +
   xlab("Gene") +
-  ylab("log2 Normalized expression") +
+  ylab("Normalized log2 expression") +
   labs(title = paste(
     "A9 markers expression", graphSubTitle, sep = "")) +
   theme_grey(base_size = 16) +
-  theme(axis.text = element_text(color = "black")) +
+  theme(axis.text = element_text(color = "black"))
 ggsave(file = outpathMarks, height = 8)
+
+# Plot CACNA1D gene expression
+ggplot(markersExprDF[markersExprDF$gene == "CACNA1D", ], aes(x = gene, y = expression)) + 
+  geom_boxplot(aes(fill = type)) +
+  scale_fill_discrete(name = "Sample Type"
+                      , labels = c("(2) High MEF2C", "(7) Low MEF2C"
+                                   , "Human Cortex", "Human Substantia Nigra"
+                                   , "iPSC neuron")) +
+  xlab("Gene") +
+  ylab("Normalized log2 expression") +
+  labs(title = paste(
+    "CACNA1D expression", graphSubTitle, sep = "")) +
+  theme_grey(base_size = 16) +
+  theme(axis.text = element_text(color = "black"))
+ggsave(file = outpathCACNA1D, height = 8)
